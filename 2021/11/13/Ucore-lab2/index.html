@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="OS," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="要先看一下基础的数据结构，每一个物理页的属性用Page表示。 12345678910struct Page&amp;#123;    &#x2F;&#x2F;该物理页被引用的数量	int ref;    &#x2F;&#x2F;一些标志位	uint32_t flags;    &#x2F;&#x2F;空闲块中连续物理页的个数，只在每个空闲块的第一个物理页中有效	unsigned int property;	&#x2F;&#x2F;管理空闲物理页的双向链表    list_entry_">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ucore-lab2">
+<meta property="og:url" content="http://example.com/2021/11/13/Ucore-lab2/index.html">
+<meta property="og:site_name" content="Tm0tfl">
+<meta property="og:description" content="要先看一下基础的数据结构，每一个物理页的属性用Page表示。 12345678910struct Page&amp;#123;    &#x2F;&#x2F;该物理页被引用的数量	int ref;    &#x2F;&#x2F;一些标志位	uint32_t flags;    &#x2F;&#x2F;空闲块中连续物理页的个数，只在每个空闲块的第一个物理页中有效	unsigned int property;	&#x2F;&#x2F;管理空闲物理页的双向链表    list_entry_">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/1954702/202005/1954702-20200510180736016-1823362630.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211112200225028.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211112191311117.png">
+<meta property="article:published_time" content="2021-11-12T16:34:59.000Z">
+<meta property="article:modified_time" content="2021-11-12T16:35:28.790Z">
+<meta property="article:author" content="Tm0tfl">
+<meta property="article:tag" content="OS">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/1954702/202005/1954702-20200510180736016-1823362630.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/11/13/Ucore-lab2/"/>
+
+
+
+
+
+  <title>Ucore-lab2 | Tm0tfl</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tm0tfl</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/11/13/Ucore-lab2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tm0tfl">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Ucore-lab2</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-11-13T00:34:59+08:00">
+                2021-11-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/OS/" itemprop="url" rel="index">
+                    <span itemprop="name">OS</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>要先看一下基础的数据结构，每一个物理页的属性用<code>Page</code>表示。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Page</span>&#123;</span></span><br><span class="line">    <span class="comment">//该物理页被引用的数量</span></span><br><span class="line">	<span class="keyword">int</span> ref;</span><br><span class="line">    <span class="comment">//一些标志位</span></span><br><span class="line">	<span class="keyword">uint32_t</span> flags;</span><br><span class="line">    <span class="comment">//空闲块中连续物理页的个数，只在每个空闲块的第一个物理页中有效</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> property;</span><br><span class="line">	<span class="comment">//管理空闲物理页的双向链表</span></span><br><span class="line">    <span class="keyword">list_entry_t</span> page_link;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Flags describing the status of a page frame */</span></span><br><span class="line"><span class="comment">//是否被保留，被保留的物理页是不能被释放，如内核所在的物理页</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PG_reserved	0</span></span><br><span class="line"><span class="comment">//property属性是否合法</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PG_property	1</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* free_area_t - maintains a doubly linked list to record free (unused) pages */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span>&#123;</span></span><br><span class="line">    <span class="comment">//管理空闲物理页的双向链表的表头</span></span><br><span class="line">	<span class="keyword">list_entry_t</span> free_list;<span class="comment">// the list header</span></span><br><span class="line">    <span class="comment">//空闲物理页的个数</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> nr_free;<span class="comment">// # of free pages in this free list</span></span><br><span class="line">&#125;<span class="keyword">free_area_t</span>;</span><br></pre></td></tr></table></figure>
+<h1 id="练习1-实现-first-fit-连续物理内存分配算法"><a href="#练习1-实现-first-fit-连续物理内存分配算法" class="headerlink" title="[练习1] 实现 first-fit 连续物理内存分配算法"></a>[练习1] 实现 first-fit 连续物理内存分配算法</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建空链表</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span></span></span><br><span class="line"><span class="function"><span class="title">default_init</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    list_init(&amp;free_list); </span><br><span class="line">    nr_free = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//进行空闲页面的初始化</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span></span></span><br><span class="line"><span class="function"><span class="title">default_init_memmap</span><span class="params">(struct Page *base, <span class="keyword">size_t</span> n)</span> </span>&#123;</span><br><span class="line">    assert(n &gt; <span class="number">0</span>);</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">p</span> =</span> base;</span><br><span class="line">    <span class="comment">//初始化从base开始的n个页面</span></span><br><span class="line">    <span class="keyword">for</span> (; p != base + n; p ++) &#123;</span><br><span class="line">        assert(PageReserved(p));</span><br><span class="line">        p-&gt;flags = p-&gt;property = <span class="number">0</span>;</span><br><span class="line">        set_page_ref(p, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//只有空闲块的第一个界面property属性有效，表示这个空闲块中页的数目</span></span><br><span class="line">    base-&gt;property = n;</span><br><span class="line">    SetPageProperty(base);</span><br><span class="line">    <span class="comment">//更新总的空闲页的个数</span></span><br><span class="line">    nr_free += n;</span><br><span class="line">    <span class="comment">//加入空闲块的双向链表中，是first-fit，链表中要维护从小到大的地址序列，所以使用list_add_before()</span></span><br><span class="line">    list_add_before(&amp;free_list, &amp;(base-&gt;page_link)); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> struct Page *</span></span><br><span class="line"><span class="function"><span class="title">default_alloc_pages</span><span class="params">(<span class="keyword">size_t</span> n)</span> </span>&#123; </span><br><span class="line">    assert(n &gt; <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (n &gt; nr_free) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">page</span> =</span> <span class="literal">NULL</span>;</span><br><span class="line">    <span class="keyword">list_entry_t</span> *le = &amp;free_list;</span><br><span class="line">    <span class="keyword">while</span> ((le = list_next(le)) != &amp;free_list) &#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">p</span> =</span> le2page(le, page_link);</span><br><span class="line">        <span class="comment">//找到合适的空闲块</span></span><br><span class="line">        <span class="keyword">if</span> (p-&gt;property &gt;= n) &#123; </span><br><span class="line">            page = p;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (page != <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="comment">//进行切割，剩余的放进链表中</span></span><br><span class="line">        <span class="keyword">if</span> (page-&gt;property &gt; n) &#123;</span><br><span class="line">            <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">p</span> =</span> page + n;</span><br><span class="line">            p-&gt;property = page-&gt;property - n;</span><br><span class="line">            SetPageProperty(p); </span><br><span class="line">            <span class="comment">//直接放到page的后面，链表有序性不会被破坏</span></span><br><span class="line">            list_add_after(&amp;(page-&gt;page_link), &amp;(p-&gt;page_link));</span><br><span class="line">        &#125;</span><br><span class="line">        list_del(&amp;(page-&gt;page_link));</span><br><span class="line">        nr_free -= n;</span><br><span class="line">        ClearPageProperty(page);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> page;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span></span></span><br><span class="line"><span class="function"><span class="title">default_free_pages</span><span class="params">(struct Page *base, <span class="keyword">size_t</span> n)</span> </span>&#123;</span><br><span class="line">    assert(n &gt; <span class="number">0</span>);</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">p</span> =</span> base;</span><br><span class="line">    <span class="keyword">for</span> (; p != base + n; p ++) &#123;</span><br><span class="line">        assert(!PageReserved(p) &amp;&amp; !PageProperty(p));</span><br><span class="line">        p-&gt;flags = <span class="number">0</span>;</span><br><span class="line">        set_page_ref(p, <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    base-&gt;property = n;</span><br><span class="line">    SetPageProperty(base);</span><br><span class="line">    <span class="keyword">list_entry_t</span> *le = list_next(&amp;free_list);</span><br><span class="line">    <span class="keyword">while</span> (le != &amp;free_list) &#123;</span><br><span class="line">        p = le2page(le, page_link);</span><br><span class="line">        le = list_next(le);</span><br><span class="line">        <span class="comment">//向后合并</span></span><br><span class="line">        <span class="keyword">if</span> (base + base-&gt;property == p) &#123;</span><br><span class="line">            base-&gt;property += p-&gt;property;</span><br><span class="line">            ClearPageProperty(p);</span><br><span class="line">            list_del(&amp;(p-&gt;page_link));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//向前合并</span></span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (p + p-&gt;property == base) &#123;</span><br><span class="line">            p-&gt;property += base-&gt;property; </span><br><span class="line">            ClearPageProperty(base);</span><br><span class="line">            list_del(&amp;(p-&gt;page_link));</span><br><span class="line">            base = p;</span><br><span class="line">        &#125; </span><br><span class="line">    &#125;</span><br><span class="line">    nr_free += n;</span><br><span class="line">    le = list_next(&amp;free_list);</span><br><span class="line">    <span class="comment">//维护链表的有序性，空闲块地址</span></span><br><span class="line">    <span class="keyword">while</span> (le != &amp;free_list) &#123;</span><br><span class="line">        p = le2page(le, page_link);</span><br><span class="line">        <span class="keyword">if</span> (base + base-&gt;property &lt;= p) &#123;</span><br><span class="line">            assert(base + base-&gt;property != p);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        le = list_next(le);</span><br><span class="line">    &#125;</span><br><span class="line">    list_add_before(le, &amp;(base-&gt;page_link));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>你的<code>first fit</code>算法是否有进一步的改进空间？<ol>
+<li>复杂度还可以进一步改进，<code>default_alloc_pages()</code>的时候最坏情况每次都是地址最大的空闲块合法，需要<code>O(n)</code>的时间。</li>
+<li>实现方式可以更加简洁</li>
+</ol>
+</li>
+</ul>
+<h1 id="练习2-实现寻找虚拟地址对应的页表"><a href="#练习2-实现寻找虚拟地址对应的页表" class="headerlink" title="[练习2]实现寻找虚拟地址对应的页表"></a>[练习2]实现寻找虚拟地址对应的页表</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//返回虚拟地址la在二级页表中对应的项。</span></span><br><span class="line"><span class="comment">// pgdir 二级页表的虚拟地址</span></span><br><span class="line"><span class="function"><span class="keyword">pte_t</span> *<span class="title">get_pte</span><span class="params">(<span class="keyword">pde_t</span> *pgdir, <span class="keyword">uintptr_t</span> la, <span class="keyword">bool</span> create)</span></span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pde_t</span> *pdep = &amp;pgdir[PDX(la)]; <span class="comment">//(1) find page directory entry</span></span><br><span class="line"><span class="keyword">if</span>(!(*pdep &amp; PTE_P)) &#123;  <span class="comment">//(2) check if entry is not present</span></span><br><span class="line">    <span class="keyword">if</span>(!create) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>; </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span>* <span class="title">page</span> =</span> alloc_page();<span class="comment">//(3) check if creating is needed, then alloc page for page table</span></span><br><span class="line">    <span class="keyword">if</span>(page == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>; </span><br><span class="line">    &#125;</span><br><span class="line">    set_page_ref(page, <span class="number">1</span>);  <span class="comment">//(4) set page reference</span></span><br><span class="line">    <span class="keyword">uintptr_t</span> pa = page2pa(page);  <span class="comment">//(5) get linear address of page</span></span><br><span class="line">    <span class="built_in">memset</span>(KADDR(pa), <span class="number">0</span>, PGSIZE); <span class="comment">// (6) clear page content using memset</span></span><br><span class="line">    *pdep = pa | PTE_P | PTE_W | PTE_U;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> &amp;((<span class="keyword">pte_t</span> *)KADDR(PDE_ADDR(*pdep)))[PTX(la)];</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>请描述页目录项（Page Directory Entry）和页表项（Page Table Entry）中每个组成部分的含义以及对ucore而言的潜在用处。</p>
+<p><img src="https://img2020.cnblogs.com/blog/1954702/202005/1954702-20200510180736016-1823362630.png" alt="32bit-paging"></p>
+<ul>
+<li>bit0(P):Present，为1表示页存在物理内存中</li>
+<li>bit1(R/W): read/write，为0表示只读，为1表示可读写</li>
+<li>bit2(U/S): user/supervisor，为0表示supervisor，特权级3无法访问；为1表示user都可以访问</li>
+<li>bit3(PWT):page-level write-through，页级通写位，为1开启页层次的写回机制</li>
+<li>bit4(PCD):page-level cache disable,为1 表示启用高速缓存，为0 表示禁用</li>
+<li>bit5(A):access位，为1表示被CPU访问过，可以记录内存页被使用频率</li>
+<li>bit(6):dirty位，CPU对页面进行写操作的时候机会把D位设置为1</li>
+<li>bit(7):确定32位分页的大小，在页面一级的粒度上设置内存属性</li>
+</ul>
+<p>可以看出页目录项和页表项的结构大致相同，由于页都是4KB需要对齐，所以页目录项和页表项都只有12-31位表示地址，其余都是标志位。不需要额外的空间来存放标志位。同时标志位利于ucore对于页的管理和分配。</p>
+</li>
+<li><p>如果ucore执行过程中访问内存，出现了页访问异常，请问硬件要做哪些事情？</p>
+<p>硬件会向CPU发送相应的中断，调用对应中断处理程序</p>
+</li>
+</ul>
+<h1 id="练习3-释放某虚地址所在的页并取消对应二级页表项的映射"><a href="#练习3-释放某虚地址所在的页并取消对应二级页表项的映射" class="headerlink" title="[练习3] 释放某虚地址所在的页并取消对应二级页表项的映射"></a>[练习3] 释放某虚地址所在的页并取消对应二级页表项的映射</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>((*ptep) &amp; PTE_P) &#123;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">page</span> =</span> pte2page(ptep);</span><br><span class="line">    <span class="comment">//更新对应页面的ref位</span></span><br><span class="line">    <span class="keyword">if</span>(page_ref_dec(page) == <span class="number">0</span>) &#123;</span><br><span class="line">        free_page(page);</span><br><span class="line">    &#125;</span><br><span class="line">    *ptep = <span class="literal">NULL</span>; </span><br><span class="line">    tlb_invalidate(pgdir, la); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>数据结构Page的全局变量（其实是一个数组）的每一项与页表中的页目录项和页表项有无对应关系？如果有，其对应关系是啥？</p>
+<p><code>Page</code>中的<code>PG_reserved</code>属性和页表项（页目录项）中<code>U/S</code>位相关，<code>U/S</code>位为<code>0</code>特权级时，<code>PG_reserved</code>为1。</p>
+</li>
+<li><p>如果希望虚拟地址与物理地址相等，则需要如何修改lab2，完成此事？</p>
+<p>修改<code>kernel</code>编译时设置的基址；修改<code>entry.s</code>中的kernel自带的页目录项；修改<code>boot_map_segment</code>中的映射参数；</p>
+</li>
+</ul>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211112200225028.png" alt="image-20211112200225028"></p>
+<h1 id="challenge-buddy-system（伙伴系统）分配算法"><a href="#challenge-buddy-system（伙伴系统）分配算法" class="headerlink" title="[challenge]buddy system（伙伴系统）分配算法"></a>[challenge]buddy system（伙伴系统）分配算法</h1><p>伙伴分配的实质是一种特殊的分离适配，内存按照2的幂进行划分；</p>
+<p>优点是快速搜索合并以低外部碎片；其缺点是内部碎片。</p>
+<p>分配内存</p>
+<ol>
+<li>寻找大小合适的内存块，需要转化为2的幂<ol>
+<li>如果找到了分配给应用程序</li>
+<li>如果没找到，分离出合适的内存块<ol>
+<li>对半分离处高于所需大小的空闲内存块</li>
+<li>如果分到最低限度就分配</li>
+<li>继续寻找内存块</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<p>释放内存</p>
+<ol>
+<li>寻找相邻的块是否释放</li>
+<li>如果相邻块也释放，进行合并，重复上述步骤直到遇到未释放的相邻块。</li>
+</ol>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211112191311117.png" alt="image-20211112191311117"></p>
+<p>我的伙伴系统分配算法写完之后没办法在<code>ucore</code>上运行，分离出来进行测试没有问题。</p>
+<p>结构体定义</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">BuddyNode</span> &#123;</span> <span class="comment">//二叉树的节点</span></span><br><span class="line">    <span class="keyword">unsigned</span> size;  <span class="comment">//控制页的个数</span></span><br><span class="line">    <span class="keyword">unsigned</span> flag;  <span class="comment">//空闲页的个数</span></span><br><span class="line">&#125;buddyNode[<span class="number">800000</span>];</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">BuddySystem</span> &#123;</span> <span class="comment">//整体管理系统</span></span><br><span class="line">    <span class="keyword">unsigned</span> prepostion;</span><br><span class="line">    <span class="keyword">unsigned</span> root[<span class="number">10</span>];</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span>* <span class="title">base</span>[10];</span></span><br><span class="line">    <span class="keyword">unsigned</span> nr_free; </span><br><span class="line">&#125;buddySystem;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Page</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> ref;                        <span class="comment">// page frame&#x27;s reference counter</span></span><br><span class="line">    <span class="keyword">unsigned</span> flags;                 <span class="comment">// array of flags that describe the status of the page frame</span></span><br><span class="line">    <span class="keyword">unsigned</span> property;          <span class="comment">// the num of free block, used in first fit pm manager</span></span><br><span class="line">    <span class="keyword">unsigned</span> node;        </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">buddy_init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    buddySystem.prepostion = <span class="number">0</span>;</span><br><span class="line">    buddySystem.nr_free = <span class="number">0</span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">buddy_init_memmap</span><span class="params">(struct Page *base, <span class="keyword">size_t</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//更新页面信息</span></span><br><span class="line">    <span class="comment">// struct Page *p = base; </span></span><br><span class="line">    <span class="comment">// for(; p != base+n; p++) &#123;</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    <span class="keyword">unsigned</span> fixn = n; </span><br><span class="line">    <span class="keyword">unsigned</span> index = ++buddySystem.root[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">if</span>(!IS_POWER_OF_2(n)) &#123;</span><br><span class="line">        fixn = fixsize(n); </span><br><span class="line">    &#125;</span><br><span class="line">    buddySystem.base[index] = base; </span><br><span class="line">    buddySystem.root[index] = buddySystem.prepostion + <span class="number">1</span>;</span><br><span class="line">    buddySystem.prepostion += <span class="number">2</span>*fixn;</span><br><span class="line">    buddySystem.root[index+<span class="number">1</span>] = buddySystem.prepostion + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">unsigned</span> i = buddySystem.root[index];</span><br><span class="line">    <span class="keyword">for</span>(; i &lt; buddySystem.prepostion; i++) &#123;</span><br><span class="line">        buddyNode[i].size = <span class="number">1</span>; </span><br><span class="line">    &#125;</span><br><span class="line">    i = buddySystem.prepostion<span class="number">-1</span>-(fixn-n);</span><br><span class="line">    <span class="keyword">unsigned</span> maxlevel = getlevel(fixn); </span><br><span class="line">    <span class="keyword">for</span>(; i &gt;= buddySystem.root[index]; i--) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> level = getlevel(i-buddySystem.root[index]+<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span>(level == maxlevel) &#123;</span><br><span class="line">            buddyNode[i].flag = <span class="number">1</span>; </span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">unsigned</span> lson = LeftSon(buddySystem.root[index]<span class="number">-1</span>, i);</span><br><span class="line">            <span class="keyword">unsigned</span> rson = RightSon(buddySystem.root[index]<span class="number">-1</span>, i);</span><br><span class="line">            buddyNode[i].size = buddyNode[lson].size + buddyNode[rson].size; </span><br><span class="line">            buddyNode[i].flag = buddyNode[lson].flag + buddyNode[rson].flag; </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    buddySystem.nr_free += n; </span><br><span class="line">    <span class="comment">// for(int i = buddySystem.root[index]; i &lt; buddySystem.prepostion; i++) &#123;</span></span><br><span class="line">    <span class="comment">//     printf(&quot;id: %d  size: %d  flag: %d\n&quot;, i, buddyNode[i].size, buddyNode[i].flag);</span></span><br><span class="line">    <span class="comment">// &#125;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> struct Page* <span class="title">buddy_alloc_pages</span><span class="params">(<span class="keyword">size_t</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(n &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>; </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(n &gt; buddySystem.nr_free) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">unsigned</span> rootnum = buddySystem.root[<span class="number">0</span>];</span><br><span class="line">    <span class="keyword">unsigned</span> k = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> fixn = n;</span><br><span class="line">    <span class="keyword">if</span>(!IS_POWER_OF_2(fixn)) &#123;</span><br><span class="line">        fixn = fixsize(n);</span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Page</span> *<span class="title">returnVal</span> =</span> <span class="literal">NULL</span>; </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;%d\n&quot;</span>, fixn);</span><br><span class="line">    <span class="keyword">for</span>(;k &lt;= rootnum; k++) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> victim = buddySystem.root[k], nodeSize = buddyNode[victim].size; </span><br><span class="line">        <span class="keyword">unsigned</span> isFind = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span>(fixn &gt; buddyNode[victim].flag) &#123;</span><br><span class="line">            <span class="keyword">continue</span>; </span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span>(fixn == buddyNode[victim].flag) &#123;</span><br><span class="line">            isFind = <span class="number">1</span>; </span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(; nodeSize != fixn; nodeSize/=<span class="number">2</span>) &#123;</span><br><span class="line">            <span class="keyword">unsigned</span> lson = LeftSon(buddySystem.root[k]<span class="number">-1</span>, victim);</span><br><span class="line">            <span class="keyword">unsigned</span> rson = RightSon(buddySystem.root[k]<span class="number">-1</span>, victim); </span><br><span class="line">            <span class="comment">// printf(&quot;fa: %d  lson: %d  rson: %d\n&quot;, victim, lson, rson);</span></span><br><span class="line">            <span class="keyword">if</span>(buddyNode[lson].flag &gt;= fixn) &#123;</span><br><span class="line">                victim = lson; </span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span>(buddyNode[rson].flag &gt;= fixn) &#123;</span><br><span class="line">                victim = rson; </span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                isFind = <span class="number">1</span>;</span><br><span class="line">                <span class="keyword">break</span> ; </span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// printf(&quot;%d\n&quot;, victim);</span></span><br><span class="line">            <span class="keyword">if</span>(nodeSize/<span class="number">2</span> == fixn) &#123;</span><br><span class="line">                <span class="keyword">if</span>(buddyNode[victim].flag == fixn) &#123;</span><br><span class="line">                    isFind = <span class="number">1</span>;</span><br><span class="line">                    <span class="keyword">break</span> ;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// printf(&quot;%d %d\n&quot;, victim, isFind);</span></span><br><span class="line">        <span class="keyword">if</span>(!isFind) &#123;</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        buddyNode[victim].flag = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">unsigned</span> offset = getOffset(buddySystem.root[k], buddySystem.root[k+<span class="number">1</span>], victim);</span><br><span class="line">        <span class="keyword">unsigned</span> block = victim; </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;victim: %d , offset: %d\n&quot;</span>, victim, offset);</span><br><span class="line">        <span class="keyword">while</span>(victim != buddySystem.root[k]) &#123;</span><br><span class="line">            <span class="keyword">unsigned</span> fa  = Father(buddySystem.root[k]<span class="number">-1</span>, victim);</span><br><span class="line">            <span class="keyword">unsigned</span> bro = Brother(buddySystem.root[k]<span class="number">-1</span>, victim); </span><br><span class="line">            buddyNode[fa].flag = MAX(buddyNode[victim].flag, buddyNode[bro].flag);</span><br><span class="line">            victim = fa;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">Page</span>* <span class="title">base</span> =</span> buddySystem.base[k] + offset; </span><br><span class="line">        base-&gt;node = block; </span><br><span class="line">        <span class="keyword">return</span> base; </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">buddy_free_pages</span><span class="params">(struct Page* base, <span class="keyword">size_t</span> n)</span> </span>&#123;</span><br><span class="line">    buddySystem.nr_free += n; </span><br><span class="line">    <span class="keyword">unsigned</span> victim = base-&gt;node; </span><br><span class="line">    <span class="keyword">unsigned</span> k = <span class="number">1</span>; </span><br><span class="line">    <span class="keyword">for</span>(;k &lt;= buddySystem.root[<span class="number">0</span>]; k++) &#123;</span><br><span class="line">        <span class="keyword">if</span>(victim &gt;= buddySystem.root[k] &amp;&amp; victim &lt; buddySystem.root[k+<span class="number">1</span>]) &#123;</span><br><span class="line">            <span class="keyword">break</span>; </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;k: %d victim: %d\n&quot;</span>, k, victim);</span><br><span class="line">    buddyNode[victim].flag = buddyNode[victim].size; </span><br><span class="line">    <span class="keyword">while</span>(victim != buddySystem.root[k]) &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> bro = Brother(buddySystem.root[k]<span class="number">-1</span>, victim); </span><br><span class="line">        <span class="keyword">unsigned</span> fa = Father(buddySystem.root[k]<span class="number">-1</span>, victim);</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;bro: %d  fa: %d\n&quot;</span>, bro, fa); </span><br><span class="line">        <span class="keyword">if</span>(buddyNode[bro].flag == buddyNode[bro].size) &#123;</span><br><span class="line">            buddyNode[fa].flag = buddyNode[fa].size; </span><br><span class="line">            victim = fa;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            buddyNode[fa].flag = MAX(buddyNode[victim].flag, buddyNode[bro].flag);</span><br><span class="line">            victim = fa;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从网上看了一种极简的实现方法，是真的牛逼。<a target="_blank" rel="noopener" href="https://coolshell.cn/articles/10427.html">https://coolshell.cn/articles/10427.html</a></p>
+<p>这是结构体，<code>unsigned longest[1]</code>用来记录子节点可用的空间大小，可扩展，使用<code>malloc</code>分配空间。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">buddy2</span> &#123;</span></span><br><span class="line">  <span class="keyword">unsigned</span> size;</span><br><span class="line">  <span class="keyword">unsigned</span> longest[<span class="number">1</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>分配的时候循环大小就可以获得对应节点管理的大小和可用大小。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/OS/" rel="tag"># OS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/11/10/Ucore-lab1/" rel="next" title="Ucore-lab1">
+                <i class="fa fa-chevron-left"></i> Ucore-lab1
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xxy1126" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:1335926819@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%83%E4%B9%A01-%E5%AE%9E%E7%8E%B0-first-fit-%E8%BF%9E%E7%BB%AD%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">[练习1] 实现 first-fit 连续物理内存分配算法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%83%E4%B9%A02-%E5%AE%9E%E7%8E%B0%E5%AF%BB%E6%89%BE%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E5%AF%B9%E5%BA%94%E7%9A%84%E9%A1%B5%E8%A1%A8"><span class="nav-number">2.</span> <span class="nav-text">[练习2]实现寻找虚拟地址对应的页表</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%83%E4%B9%A03-%E9%87%8A%E6%94%BE%E6%9F%90%E8%99%9A%E5%9C%B0%E5%9D%80%E6%89%80%E5%9C%A8%E7%9A%84%E9%A1%B5%E5%B9%B6%E5%8F%96%E6%B6%88%E5%AF%B9%E5%BA%94%E4%BA%8C%E7%BA%A7%E9%A1%B5%E8%A1%A8%E9%A1%B9%E7%9A%84%E6%98%A0%E5%B0%84"><span class="nav-number">3.</span> <span class="nav-text">[练习3] 释放某虚地址所在的页并取消对应二级页表项的映射</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#challenge-buddy-system%EF%BC%88%E4%BC%99%E4%BC%B4%E7%B3%BB%E7%BB%9F%EF%BC%89%E5%88%86%E9%85%8D%E7%AE%97%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">[challenge]buddy system（伙伴系统）分配算法</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tm0tfl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
