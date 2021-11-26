@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="os," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="[练习1]分配并初始化一个进程控制块初始化，可以参考proc_init中的初始化，因为是在内核中，所以cr3就直接设置为boot_cr3。 需要理解结构体里面变量的含义。 123456789101112proc-&gt;state &#x3D; PROC_UNINIT; proc-&gt;pid &#x3D; -1; proc-&gt;runs &#x3D; 0; proc-&gt;kstack &#x3D; 0; proc-&gt;n">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ucore-lab4">
+<meta property="og:url" content="http://example.com/2021/11/26/Ucore-lab4/index.html">
+<meta property="og:site_name" content="Tm0tfl">
+<meta property="og:description" content="[练习1]分配并初始化一个进程控制块初始化，可以参考proc_init中的初始化，因为是在内核中，所以cr3就直接设置为boot_cr3。 需要理解结构体里面变量的含义。 123456789101112proc-&gt;state &#x3D; PROC_UNINIT; proc-&gt;pid &#x3D; -1; proc-&gt;runs &#x3D; 0; proc-&gt;kstack &#x3D; 0; proc-&gt;n">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211124003412342.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211124144903152.png">
+<meta property="article:published_time" content="2021-11-26T02:27:14.000Z">
+<meta property="article:modified_time" content="2021-11-26T02:30:19.163Z">
+<meta property="article:author" content="Tm0tfl">
+<meta property="article:tag" content="os">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211124003412342.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/11/26/Ucore-lab4/"/>
+
+
+
+
+
+  <title>Ucore-lab4 | Tm0tfl</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tm0tfl</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/11/26/Ucore-lab4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tm0tfl">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Ucore-lab4</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-11-26T10:27:14+08:00">
+                2021-11-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%A9%E9%97%AE%E4%B9%8B%E8%B7%AF/" itemprop="url" rel="index">
+                    <span itemprop="name">天问之路</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%A9%E9%97%AE%E4%B9%8B%E8%B7%AF/Ucore/" itemprop="url" rel="index">
+                    <span itemprop="name">Ucore</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="练习1-分配并初始化一个进程控制块"><a href="#练习1-分配并初始化一个进程控制块" class="headerlink" title="[练习1]分配并初始化一个进程控制块"></a>[练习1]分配并初始化一个进程控制块</h1><p>初始化，可以参考proc_init中的初始化，因为是在内核中，所以cr3就直接设置为boot_cr3。</p>
+<p>需要理解结构体里面变量的含义。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">proc-&gt;state = PROC_UNINIT; </span><br><span class="line">proc-&gt;pid = -1; </span><br><span class="line">proc-&gt;runs = 0; </span><br><span class="line">proc-&gt;kstack = 0; </span><br><span class="line">proc-&gt;need_resched = 0; </span><br><span class="line">proc-&gt;parent = NULL; </span><br><span class="line">proc-&gt;mm = NULL; </span><br><span class="line">memset(&amp;(proc-&gt;context), 0, sizeof(struct context)); </span><br><span class="line">proc-&gt;tf = NULL; </span><br><span class="line">proc-&gt;cr3 = boot_cr3; </span><br><span class="line">proc-&gt;flags = 0; </span><br><span class="line">memset(proc-&gt;name, 0, PROC_NAME_LEN+1); </span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>请说明proc_struct中<code>struct context context</code>和<code>struct trapframe *tf</code>成员变量含义和在本实验中的作用是啥？</p>
+</blockquote>
+<p><code>struct context context</code>用来保存进程的上下文。</p>
+<p>在创建线程initproc的时候，context在copy_thread函数中被初始化</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">   <span class="comment">//下次执行该进程时应该执行的第一条指令</span></span><br><span class="line">proc-&gt;context.eip = (<span class="keyword">uintptr_t</span>)forkret;</span><br><span class="line"><span class="comment">//下次执行该进程时的栈顶指针</span></span><br><span class="line">   proc-&gt;context.esp = (<span class="keyword">uintptr_t</span>)(proc-&gt;tf);</span><br></pre></td></tr></table></figure>
+<p>context还在switch_to函数中被调用，用来切换进程运行的上下文。在本实验中，通过switch_to把idleproc运行的环境保存在了<code>idleproc-&gt;context</code>中，同时通过<code>initproc-&gt;context中</code>的值来设置initproc进程运行的上下文。</p>
+<p><code>struct trapframe *tf</code>用来保存中断栈帧。当进程从用户空间跳到内核空间时，中断帧记录了进程被中断前的状态。当内核需要跳回用户空间时，需要调整中断帧以恢复让进程能够执行的各寄存器值。<br>在本实验中，kernel_thread中首先进行临时中断栈的初始化，在do_fork中调用copy_thread完成对<code>proc-&gt;tf</code>的赋值，把tf放在了kstack的栈顶。在__trapret被使用恢复，执行kernel_thread_entry。</p>
+<h1 id="练习2-为新创建的内核线程分配资源"><a href="#练习2-为新创建的内核线程分配资源" class="headerlink" title="[练习2]为新创建的内核线程分配资源"></a>[练习2]为新创建的内核线程分配资源</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">proc = alloc_proc(); </span><br><span class="line"><span class="keyword">if</span>(proc == <span class="literal">NULL</span>) &#123;</span><br><span class="line">    <span class="keyword">goto</span> fork_out; </span><br><span class="line">&#125;</span><br><span class="line">proc-&gt;parent = current; </span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(setup_kstack(proc) != <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">goto</span> bad_fork_cleanup_proc; </span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>(copy_mm(clone_flags, proc) != <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">goto</span> bad_fork_cleanup_kstack; </span><br><span class="line">&#125;</span><br><span class="line">copy_thread(proc, <span class="built_in">stack</span>, tf);</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> intr_flag; </span><br><span class="line">local_intr_save(intr_flag);</span><br><span class="line">&#123;</span><br><span class="line">    proc-&gt;pid = get_pid(); </span><br><span class="line">    list_add(&amp;proc_list, &amp;(proc-&gt;list_link)); </span><br><span class="line">    hash_proc(proc);</span><br><span class="line">    nr_process++ ;</span><br><span class="line">&#125;</span><br><span class="line">local_intr_restore(intr_flag);</span><br><span class="line"></span><br><span class="line">wakeup_proc(proc);</span><br><span class="line">ret = proc-&gt;pid;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>请说明ucore是否做到给每个新fork的线程一个唯一的id？请说明你的分析和理由</p>
+</blockquote>
+<p>可以做到，首先pid编号的数量MAX_PID是MAX_PROCESS的2倍；其次，在每次循环到<code>proc-&gt;pid == last_pid</code>的时候，都会执行<code>++last_pid</code>，在超过next_safe的时候，还会重新开始循环检测。</p>
+<h1 id="练习3-阅读代码，理解-proc-run-函数和它调用的函数如何完成进程切换的"><a href="#练习3-阅读代码，理解-proc-run-函数和它调用的函数如何完成进程切换的" class="headerlink" title="[练习3]阅读代码，理解 proc_run 函数和它调用的函数如何完成进程切换的"></a>[练习3]阅读代码，理解 proc_run 函数和它调用的函数如何完成进程切换的</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span></span></span><br><span class="line"><span class="function"><span class="title">proc_run</span><span class="params">(struct proc_struct *proc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (proc != current) &#123;</span><br><span class="line">        <span class="keyword">bool</span> intr_flag;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">proc_struct</span> *<span class="title">prev</span> =</span> current, *next = proc;</span><br><span class="line">        local_intr_save(intr_flag);</span><br><span class="line">        &#123;</span><br><span class="line">            current = proc;</span><br><span class="line">            load_esp0(next-&gt;kstack + KSTACKSIZE);</span><br><span class="line">            lcr3(next-&gt;cr3);</span><br><span class="line">            switch_to(&amp;(prev-&gt;context), &amp;(next-&gt;context));</span><br><span class="line">        &#125;</span><br><span class="line">        local_intr_restore(intr_flag);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>proc_run函数中大部分内容都是在屏蔽中断的时候进行的</li>
+<li>设置当前进程块为将要调用的进程块，即<code>current = proc</code></li>
+<li>设置ts中特权级0处的esp，为了使用户态向内核态转移的时候可以正确的找到高特权级的栈空间</li>
+<li>设置进程对应的页表，切换虚拟地址空间</li>
+<li>通过调用switch_to函数保存prev的运行环境，并且设置好next的运行环境。</li>
+</ol>
+<p>在调用switch_to函数的时候需要把参数压栈，然后压入返回地址，进入到switch_to函数中并没有保存ebp，所以函数栈帧是这样的：</p>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211124003412342.png" alt="image-20211124003412342"></p>
+<p>可以对照switch_to函数的汇编代码和struct context的定义：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">struct context &#123;</span><br><span class="line">    uint32_t eip;</span><br><span class="line">    uint32_t esp;</span><br><span class="line">    uint32_t ebx;</span><br><span class="line">    uint32_t ecx;</span><br><span class="line">    uint32_t edx;</span><br><span class="line">    uint32_t esi;</span><br><span class="line">    uint32_t edi;</span><br><span class="line">    uint32_t ebp;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">.text</span><br><span class="line">.globl switch_to</span><br><span class="line">switch_to:                      # switch_to(from, to)</span><br><span class="line"></span><br><span class="line">    # *(esp+4)保存的是指向prev-&gt;next的指针</span><br><span class="line">    movl 4(%esp), %eax  </span><br><span class="line">    # call指令会把下一条返回指令压栈，这里pop出来存放到了*(eax)，参照上面struct context定义可知是保存了eip</span><br><span class="line">    popl 0(%eax)</span><br><span class="line">    # 下面就是依次保存了prev进程寄存器的信息</span><br><span class="line">    movl %esp, 4(%eax)</span><br><span class="line">    movl %ebx, 8(%eax)</span><br><span class="line">    movl %ecx, 12(%eax)</span><br><span class="line">    movl %edx, 16(%eax)</span><br><span class="line">    movl %esi, 20(%eax)</span><br><span class="line">    movl %edi, 24(%eax)</span><br><span class="line">    movl %ebp, 28(%eax)</span><br><span class="line"></span><br><span class="line">    # 因为前面popl了一下，所以现在 *(esp+4)存放是是指向next-&gt;proc的指针</span><br><span class="line">    movl 4(%esp), %eax  </span><br><span class="line">    # 根据context结构体设置next进程运行所需要的寄存器信息</span><br><span class="line">    movl 28(%eax), %ebp</span><br><span class="line">    movl 24(%eax), %edi</span><br><span class="line">    movl 20(%eax), %esi</span><br><span class="line">    movl 16(%eax), %edx</span><br><span class="line">    </span><br><span class="line">    </span><br><span class="line">    movl 12(%eax), %ecx</span><br><span class="line">    movl 8(%eax), %ebx</span><br><span class="line">    movl 4(%eax), %esp</span><br><span class="line">	# 这里是把context结构体中的eip入栈，代替了call指令压入的返回值，</span><br><span class="line">    pushl 0(%eax)             +</span><br><span class="line">    # push eip</span><br><span class="line">	# 当执行ret的时候由于返回地址发生了改变所以不会回到switch_to函数</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<p>根据copy_thread函数中设置的context，接下来会执行forkret。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span></span></span><br><span class="line"><span class="function"><span class="title">forkret</span><span class="params">(<span class="keyword">void</span>)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//会把切换后进程的trapframe压入到栈中，还会压入返回地址</span></span><br><span class="line">    forkrets(current-&gt;tf); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">.globl __trapret</span><br><span class="line">__trapret:</span><br><span class="line">    # restore registers from stack</span><br><span class="line">    popal</span><br><span class="line"></span><br><span class="line">    # restore %ds, %es, %fs and %gs</span><br><span class="line">    popl %gs</span><br><span class="line">    popl %fs</span><br><span class="line">    popl %es</span><br><span class="line">    popl %ds</span><br><span class="line"></span><br><span class="line">    # get rid of the trap number and error code</span><br><span class="line">    addl $0x8, %esp</span><br><span class="line">    # iret把cs:ip, ss:esp(根据特权级判断)，eflags，之后会转移到kernel_thread_entry</span><br><span class="line">    iret</span><br><span class="line"></span><br><span class="line">.globl forkrets</span><br><span class="line">forkrets:</span><br><span class="line">    # 去掉返回地址的影响，把栈顶设置为中断栈tf</span><br><span class="line">    movl 4(%esp), %esp</span><br><span class="line">    jmp __trapret</span><br></pre></td></tr></table></figure>
+<p>iret指令根据tf中的cs:ip，设置返回到kernel_thread_entry。<strong>其实在执行完iret函数之后就已经完成了进程切换</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.text</span><br><span class="line">.globl kernel_thread_entry</span><br><span class="line">kernel_thread_entry:        </span><br><span class="line">	# 就是调用函数，在kernel_thread函数中设置了edx为参数，ebx为函数指针</span><br><span class="line">    pushl %edx              # push arg</span><br><span class="line">    call *%ebx              # call fn</span><br><span class="line">	# 执行完之后保存返回值，执行do_exit结束进程</span><br><span class="line">    pushl %eax              # save the return value of fn(arg)</span><br><span class="line">    call do_exit            # call do_exit to terminate current thread</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在本实验的执行过程中，创建且运行了几个内核线程？</p>
+</blockquote>
+<p>创建且运行了2个内核线程</p>
+<blockquote>
+<p>语句<code>local_intr_save(intr_flag);....local_intr_restore(intr_flag);</code>在这里有何作用?请说明理由</p>
+</blockquote>
+<p><code>local_intr_save(intr_flag)</code>判断中断是否开启，如果开启就关闭中断并且把intr_flag设置为1。<br><code>local_intr_restore(intr_flag)</code>根据intr_flag判断是否需要开启中断。这两句代码实现了屏蔽中断的作用。</p>
+<p>在proc_run执行进程切换的时候，被上面两句代码包含的语句都不能被中断打断，因为执行过程中进程的环境处于两个进程的转换过程中，需要有原子性，否则如果有中断信号就会出现异常。</p>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211124144903152.png" alt="image-20211124144903152"></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/os/" rel="tag"># os</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/11/26/MIPS-Note/" rel="next" title="MIPS-Note">
+                <i class="fa fa-chevron-left"></i> MIPS-Note
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">16</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xxy1126" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:1335926819@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%83%E4%B9%A01-%E5%88%86%E9%85%8D%E5%B9%B6%E5%88%9D%E5%A7%8B%E5%8C%96%E4%B8%80%E4%B8%AA%E8%BF%9B%E7%A8%8B%E6%8E%A7%E5%88%B6%E5%9D%97"><span class="nav-number">1.</span> <span class="nav-text">[练习1]分配并初始化一个进程控制块</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%83%E4%B9%A02-%E4%B8%BA%E6%96%B0%E5%88%9B%E5%BB%BA%E7%9A%84%E5%86%85%E6%A0%B8%E7%BA%BF%E7%A8%8B%E5%88%86%E9%85%8D%E8%B5%84%E6%BA%90"><span class="nav-number">2.</span> <span class="nav-text">[练习2]为新创建的内核线程分配资源</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%83%E4%B9%A03-%E9%98%85%E8%AF%BB%E4%BB%A3%E7%A0%81%EF%BC%8C%E7%90%86%E8%A7%A3-proc-run-%E5%87%BD%E6%95%B0%E5%92%8C%E5%AE%83%E8%B0%83%E7%94%A8%E7%9A%84%E5%87%BD%E6%95%B0%E5%A6%82%E4%BD%95%E5%AE%8C%E6%88%90%E8%BF%9B%E7%A8%8B%E5%88%87%E6%8D%A2%E7%9A%84"><span class="nav-number">3.</span> <span class="nav-text">[练习3]阅读代码，理解 proc_run 函数和它调用的函数如何完成进程切换的</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tm0tfl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
